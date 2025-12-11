@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>积分系统设计与模拟小工具</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- 样式 -->
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .section {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 16px rgba(15, 23, 42, 0.04);
+    }
+
+    .section h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section h2 span.badge {
+      font-size: 12px;
+      background: #eef2ff;
+      color: #4f46e5;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .section-desc {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+
+    form.inline-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 13px;
+      min-width: 0;
+    }
+
+    input[type="number"] {
+      width: 110px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.2);
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    button.primary {
+      background: #4f46e5;
+      color: #ffffff;
+    }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    button.danger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 6px 4px;
+      text-align: left;
+    }
+
+    th {
+      font-weight: 600;
+      color: #4b5563;
+      background: #f9fafb;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .empty-tip {
+      font-size: 12px;
+      color: #9ca3af;
+      padding: 4px 0;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .calc-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .calc-columns {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .calc-section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .result-box {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      font-size: 13px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .result-label {
+      color: #6b7280;
+    }
+
+    .result-value {
+      font-weight: 600;
+    }
+
+    .result-balance.positive {
+      color: #16a34a;
+    }
+
+    .result-balance.negative {
+      color: #b91c1c;
+    }
+
+    .footer-tip {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+  </style>
+
+  <!-- 用于导出/导入 Excel 的库（SheetJS） -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <h1>积分系统设计与模拟小工具</h1>
+  <div class="subtitle">
+    先配置「怎么赚分」「怎么花分」和「邀请系统」，再用模拟器试算不同行为次数下，总积分和剩余积分是多少。
+  </div>
+
+  <!-- 1. 赚积分入口 -->
+  <section class="section" id="earn-section">
+    <h2>
+      1. 赚积分的途径
+      <span class="badge">积分来源配置</span>
+    </h2>
+    <div class="section-desc">
+      例如：完成新手任务 +100 分、每日签到 +10 分、完成订单 +5 分等。
+    </div>
+    <form class="inline-form" id="addEarnForm">
+      <input type="text" id="earnName" placeholder="途径名称（如：每日签到）" required />
+      <input type="number" id="earnPoints" placeholder="每次获得积分" min="0" step="1" required />
+      <button type="submit" class="primary">
+        + 添加赚积分途径
+      </button>
+    </form>
+    <div id="earnListWrapper">
+      <table>
+        <thead>
+        <tr>
+          <th style="width: 45%;">途径名称</th>
+          <th style="width: 30%;">每次获得积分</th>
+          <th style="width: 25%;">操作</th>
+        </tr>
+        </thead>
+        <tbody id="earnTableBody"></tbody>
+      </table>
+      <div id="earnEmptyTip" class="empty-tip">
+        还没有配置赚积分方式，可以先添加一两条示例。
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 花积分入口 -->
+  <section class="section" id="spend-section">
+    <h2>
+      2. 花积分的途径
+      <span class="badge">积分消耗配置</span>
+    </h2>
+    <div class="section-desc">
+      例如：兑换优惠券 -100 分、抽奖一次 -20 分、解锁会员权益 -500 分等。
+    </div>
+    <form class="inline-form" id="addSpendForm">
+      <input type="text" id="spendName" placeholder="途径名称（如：兑换5元券）" required />
+      <input type="number" id="spendPoints" placeholder="每次消耗积分" min="0" step="1" required />
+      <button type="submit" class="primary">
+        + 添加花积分途径
+      </button>
+    </form>
+    <div id="spendListWrapper">
+      <table>
+        <thead>
+        <tr>
+          <th style="width: 45%;">途径名称</th>
+          <th style="width: 30%;">每次消耗积分</th>
+          <th style="width: 25%;">操作</th>
+        </tr>
+        </thead>
+        <tbody id="spendTableBody"></tbody>
+      </table>
+      <div id="spendEmptyTip" class="empty-tip">
+        还没有配置花积分方式，可以先添加一两条示例。
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 邀请系统配置 -->
+  <section class="section" id="invite-section">
+    <h2>
+      3. 邀请系统（阶梯奖励）
+      <span class="badge">按邀请人数区间设置奖励</span>
+    </h2>
+    <div class="section-desc">
+      每条规则形如：邀请【min】至【max】个用户，被邀请人「条件」，得【积分】积分 / 人。<br>
+      计算时会按区间拆段累加，例如 0–1 人 10 分/人，2–5 人 20 分/人，总共邀请 4 人 → 1×10 + 3×20。
+    </div>
+    <form class="inline-form" id="addInviteRuleForm">
+      <select id="inviteCondition">
+        <option value="被邀请人注册成功">被邀请人注册成功</option>
+        <option value="被邀请人首次使用键盘奖励">被邀请人首次使用键盘奖励</option>
+        <option value="被邀请人完成月度付费">被邀请人完成月度付费</option>
+        <option value="被邀请人完成季度付费">被邀请人完成季度付费</option>
+        <option value="被邀请人完成年度付费">被邀请人完成年度付费</option>
+      </select>
+      <input type="number" id="inviteMin" placeholder="起始人数（min）" min="0" step="1" required />
+      <input type="number" id="inviteMax" placeholder="结束人数（max）" min="0" step="1" required />
+      <input type="number" id="invitePoints" placeholder="每人积分" min="0" step="1" required />
+      <button type="submit" class="primary">
+        + 添加邀请规则
+      </button>
+    </form>
+    <div id="inviteRuleListWrapper">
+      <table>
+        <thead>
+        <tr>
+          <th style="width: 30%;">被邀请人条件</th>
+          <th style="width: 40%;">邀请人数区间</th>
+          <th style="width: 20%;">每人积分</th>
+          <th style="width: 10%;">操作</th>
+        </tr>
+        </thead>
+        <tbody id="inviteRuleTableBody"></tbody>
+      </table>
+      <div id="inviteRuleEmptyTip" class="empty-tip">
+        还没有配置邀请规则，可以先为「被邀请人注册成功」添加 0–1、2–5、6–10 等区间。
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 模拟计算 -->
+  <section class="section" id="calc-section">
+    <h2>
+      4. 积分模拟计算
+      <span class="badge">使用次数 → 剩余积分</span>
+    </h2>
+    <div class="section-desc">
+      第一步：填写每种「赚积分」途径的使用次数，算出总共赚了多少分。<br>
+      第二步：填写每种「花积分」途径的使用次数，看花掉多少分。<br>
+      第三步：填写邀请系统中各条件的邀请人数，按阶梯规则自动算出邀请积分。
+    </div>
+
+    <div class="calc-columns">
+      <!-- 左侧：赚积分 + 邀请系统 -->
+      <div>
+        <div class="calc-section-title">
+          <strong>赚积分次数</strong>
+          <span class="tag">从上面的来源列表自动生成</span>
+        </div>
+        <table>
+          <thead>
+          <tr>
+            <th>途径</th>
+            <th>每次积分</th>
+            <th>使用次数</th>
+            <th>小计</th>
+          </tr>
+          </thead>
+          <tbody id="earnCalcBody"></tbody>
+        </table>
+        <div id="earnCalcEmptyTip" class="empty-tip">
+          暂无赚积分配置，请先在上方添加「赚积分的途径」。
+        </div>
+
+        <!-- 邀请系统积分 -->
+        <div style="margin-top: 16px;">
+          <div class="calc-section-title">
+            <strong>邀请系统积分</strong>
+            <span class="tag">根据阶梯规则自动计算</span>
+          </div>
+          <table>
+            <thead>
+            <tr>
+              <th>被邀请人条件</th>
+              <th>邀请人数</th>
+              <th>小计积分</th>
+            </tr>
+            </thead>
+            <tbody id="inviteCalcBody"></tbody>
+          </table>
+          <div id="inviteCalcEmptyTip" class="empty-tip">
+            当前尚未为任意条件配置邀请规则，即使填写人数也不会产生积分。
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧：花积分 -->
+      <div>
+        <div class="calc-section-title">
+          <strong>花积分次数</strong>
+          <span class="tag">从上面的消耗列表自动生成</span>
+        </div>
+        <table>
+          <thead>
+          <tr>
+            <th>途径</th>
+            <th>每次花费</th>
+            <th>使用次数</th>
+            <th>小计</th>
+          </tr>
+          </thead>
+          <tbody id="spendCalcBody"></tbody>
+        </table>
+        <div id="spendCalcEmptyTip" class="empty-tip">
+          暂无花积分配置，请先在上方添加「花积分的途径」。
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 12px; display:flex; gap:8px; flex-wrap:wrap;">
+      <button id="calcButton" class="primary">
+        🧮 计算积分
+      </button>
+      <button id="resetCountsButton" class="secondary">
+        清空所有次数
+      </button>
+    </div>
+
+    <div class="result-box">
+      <div class="result-row">
+        <span class="result-label">总共获得积分（含邀请）：</span>
+        <span class="result-value" id="totalEarned">0</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">总共花费积分：</span>
+        <span class="result-value" id="totalSpent">0</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">剩余积分：</span>
+        <span class="result-value result-balance" id="balance">0</span>
+      </div>
+    </div>
+
+    <div class="footer-tip">
+      建议：可以先导出一版 Excel 当作「积分策略方案 v1」，之后调整规则再另存一版，方便对比不同方案。
+    </div>
+
+    <!-- 保存 / 载入 / 导出 / 导入按钮 -->
+    <div style="margin-top: 10px; display:flex; flex-wrap:wrap; gap:8px;">
+      <button id="saveConfigButton" class="secondary">💾 保存当前积分规则</button>
+      <button id="loadConfigButton" class="secondary">📂 载入已保存规则</button>
+      <button id="clearConfigButton" class="secondary">🧹 清除本地保存</button>
+      <button id="exportXlsxButton" class="secondary">📑 导出规则为 Excel</button>
+      <button id="importXlsxButton" class="secondary">📥 导入规则（Excel）</button>
+      <input type="file" id="xlsxFileInput" accept=".xlsx,.xls" style="display:none;" />
+    </div>
+  </section>
+</div>
+
+<script>
+  // ====== 常量 ======
+  const INVITE_CONDITIONS = [
+    "被邀请人注册成功",
+    "被邀请人首次使用键盘奖励",
+    "被邀请人完成月度付费",
+    "被邀请人完成季度付费",
+    "被邀请人完成年度付费"
+  ];
+  const STORAGE_KEY = "points-config-v2";
+
+  // ====== 全局数据 ======
+  let earnActions = [];
+  let spendActions = [];
+  let inviteRules = []; // {id, condition, min, max, points}
+  let nextId = 1;
+
+  // DOM 引用
+  const earnTableBody = document.getElementById("earnTableBody");
+  const spendTableBody = document.getElementById("spendTableBody");
+  const earnEmptyTip = document.getElementById("earnEmptyTip");
+  const spendEmptyTip = document.getElementById("spendEmptyTip");
+
+  const inviteRuleTableBody = document.getElementById("inviteRuleTableBody");
+  const inviteRuleEmptyTip = document.getElementById("inviteRuleEmptyTip");
+
+  const earnCalcBody = document.getElementById("earnCalcBody");
+  const spendCalcBody = document.getElementById("spendCalcBody");
+  const earnCalcEmptyTip = document.getElementById("earnCalcEmptyTip");
+  const spendCalcEmptyTip = document.getElementById("spendCalcEmptyTip");
+
+  const inviteCalcBody = document.getElementById("inviteCalcBody");
+  const inviteCalcEmptyTip = document.getElementById("inviteCalcEmptyTip");
+
+  const totalEarnedSpan = document.getElementById("totalEarned");
+  const totalSpentSpan = document.getElementById("totalSpent");
+  const balanceSpan = document.getElementById("balance");
+
+  // ====== 工具：重算 nextId ======
+  function recomputeNextId() {
+    const all = [...earnActions, ...spendActions, ...inviteRules];
+    if (all.length === 0) {
+      nextId = 1;
+    } else {
+      nextId = Math.max(...all.map(a => a.id || 0)) + 1;
+    }
+  }
+
+  // ====== 赚积分列表（可编辑积分） ======
+  function renderEarnActions() {
+    earnTableBody.innerHTML = "";
+    if (earnActions.length === 0) {
+      earnEmptyTip.style.display = "block";
+    } else {
+      earnEmptyTip.style.display = "none";
+    }
+
+    earnActions.forEach(action => {
+      const tr = document.createElement("tr");
+
+      const nameTd = document.createElement("td");
+      nameTd.textContent = action.name;
+      tr.appendChild(nameTd);
+
+      const pointsTd = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = "0";
+      input.step = "1";
+      input.value = action.points;
+      input.style.width = "80px";
+      input.addEventListener("change", () => {
+        const val = Number(input.value);
+        action.points = isNaN(val) || val < 0 ? 0 : val;
+        input.value = action.points;
+        renderCalcTables();
+      });
+      pointsTd.appendChild(input);
+      const span = document.createElement("span");
+      span.textContent = " 分";
+      span.style.marginLeft = "4px";
+      pointsTd.appendChild(span);
+      tr.appendChild(pointsTd);
+
+      const opTd = document.createElement("td");
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "删除";
+      delBtn.className = "danger";
+      delBtn.addEventListener("click", () => {
+        earnActions = earnActions.filter(a => a.id !== action.id);
+        renderEarnActions();
+        renderCalcTables();
+      });
+      opTd.appendChild(delBtn);
+      tr.appendChild(opTd);
+
+      earnTableBody.appendChild(tr);
+    });
+  }
+
+  // ====== 花积分列表（可编辑积分） ======
+  function renderSpendActions() {
+    spendTableBody.innerHTML = "";
+    if (spendActions.length === 0) {
+      spendEmptyTip.style.display = "block";
+    } else {
+      spendEmptyTip.style.display = "none";
+    }
+
+    spendActions.forEach(action => {
+      const tr = document.createElement("tr");
+
+      const nameTd = document.createElement("td");
+      nameTd.textContent = action.name;
+      tr.appendChild(nameTd);
+
+      const pointsTd = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = "0";
+      input.step = "1";
+      input.value = action.points;
+      input.style.width = "80px";
+      input.addEventListener("change", () => {
+        const val = Number(input.value);
+        action.points = isNaN(val) || val < 0 ? 0 : val;
+        input.value = action.points;
+        renderCalcTables();
+      });
+      pointsTd.appendChild(input);
+      const span = document.createElement("span");
+      span.textContent = " 分";
+      span.style.marginLeft = "4px";
+      pointsTd.appendChild(span);
+      tr.appendChild(pointsTd);
+
+      const opTd = document.createElement("td");
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "删除";
+      delBtn.className = "danger";
+      delBtn.addEventListener("click", () => {
+        spendActions = spendActions.filter(a => a.id !== action.id);
+        renderSpendActions();
+        renderCalcTables();
+      });
+      opTd.appendChild(delBtn);
+      tr.appendChild(opTd);
+
+      spendTableBody.appendChild(tr);
+    });
+  }
+
+  // ====== 邀请规则列表 ======
+  function renderInviteRules() {
+    inviteRuleTableBody.innerHTML = "";
+    if (inviteRules.length === 0) {
+      inviteRuleEmptyTip.style.display = "block";
+    } else {
+      inviteRuleEmptyTip.style.display = "none";
+    }
+
+    // 按条件 + min 排序，更清晰
+    const sorted = [...inviteRules].sort((a, b) => {
+      if (a.condition === b.condition) return a.min - b.min || a.max - b.max;
+      return INVITE_CONDITIONS.indexOf(a.condition) - INVITE_CONDITIONS.indexOf(b.condition);
+    });
+
+    sorted.forEach(rule => {
+      const tr = document.createElement("tr");
+
+      const condTd = document.createElement("td");
+      condTd.textContent = rule.condition;
+      tr.appendChild(condTd);
+
+      const rangeTd = document.createElement("td");
+      rangeTd.textContent = `${rule.min} ～ ${rule.max} 人`;
+      tr.appendChild(rangeTd);
+
+      const pointsTd = document.createElement("td");
+      pointsTd.textContent = rule.points + " 分/人";
+      tr.appendChild(pointsTd);
+
+      const opTd = document.createElement("td");
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "删";
+      delBtn.className = "danger";
+      delBtn.style.padding = "4px 8px";
+      delBtn.addEventListener("click", () => {
+        inviteRules = inviteRules.filter(r => r.id !== rule.id);
+        renderInviteRules();
+        renderCalcTables();
+      });
+      opTd.appendChild(delBtn);
+      tr.appendChild(opTd);
+
+      inviteRuleTableBody.appendChild(tr);
+    });
+  }
+
+  // ====== 计算：根据某个条件的阶梯规则，算邀请积分 ======
+  function calcInvitePointsForCondition(condition, totalInvites) {
+    const rules = inviteRules.filter(r => r.condition === condition);
+    if (rules.length === 0 || totalInvites <= 0) return 0;
+
+    const sorted = [...rules].sort((a, b) => a.min - b.min || a.max - b.max);
+    let total = 0;
+
+    sorted.forEach(rule => {
+      const start = Math.max(rule.min, 1); // 邀请人数从 1 开始计
+      if (totalInvites < start) return;
+      const end = Math.min(rule.max, totalInvites);
+      if (end < start) return;
+      const count = end - start + 1;
+      total += count * rule.points;
+    });
+
+    return total;
+  }
+
+  // ====== 渲染模拟区域 ======
+  function renderCalcTables() {
+    // 赚积分
+    earnCalcBody.innerHTML = "";
+    if (earnActions.length === 0) {
+      earnCalcEmptyTip.style.display = "block";
+    } else {
+      earnCalcEmptyTip.style.display = "none";
+      earnActions.forEach(action => {
+        const tr = document.createElement("tr");
+
+        const nameTd = document.createElement("td");
+        nameTd.textContent = action.name;
+        tr.appendChild(nameTd);
+
+        const pointsTd = document.createElement("td");
+        pointsTd.textContent = action.points;
+        tr.appendChild(pointsTd);
+
+        const countTd = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.step = "1";
+        input.value = "0";
+        input.dataset.actionId = action.id;
+        input.className = "earn-count-input";
+        input.style.width = "80px";
+        countTd.appendChild(input);
+        tr.appendChild(countTd);
+
+        const subtotalTd = document.createElement("td");
+        subtotalTd.textContent = "0";
+        subtotalTd.dataset.actionId = action.id;
+        subtotalTd.className = "earn-subtotal";
+        tr.appendChild(subtotalTd);
+
+        earnCalcBody.appendChild(tr);
+      });
+    }
+
+    // 花积分
+    spendCalcBody.innerHTML = "";
+    if (spendActions.length === 0) {
+      spendCalcEmptyTip.style.display = "block";
+    } else {
+      spendCalcEmptyTip.style.display = "none";
+      spendActions.forEach(action => {
+        const tr = document.createElement("tr");
+
+        const nameTd = document.createElement("td");
+        nameTd.textContent = action.name;
+        tr.appendChild(nameTd);
+
+        const pointsTd = document.createElement("td");
+        pointsTd.textContent = action.points;
+        tr.appendChild(pointsTd);
+
+        const countTd = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.step = "1";
+        input.value = "0";
+        input.dataset.actionId = action.id;
+        input.className = "spend-count-input";
+        input.style.width = "80px";
+        countTd.appendChild(input);
+        tr.appendChild(countTd);
+
+        const subtotalTd = document.createElement("td");
+        subtotalTd.textContent = "0";
+        subtotalTd.dataset.actionId = action.id;
+        subtotalTd.className = "spend-subtotal";
+        tr.appendChild(subtotalTd);
+
+        spendCalcBody.appendChild(tr);
+      });
+    }
+
+    // 邀请系统模拟
+    inviteCalcBody.innerHTML = "";
+    const hasInviteRules = inviteRules.length > 0;
+    if (!hasInviteRules) {
+      inviteCalcEmptyTip.style.display = "block";
+    } else {
+      inviteCalcEmptyTip.style.display = "none";
+    }
+
+    INVITE_CONDITIONS.forEach(cond => {
+      const tr = document.createElement("tr");
+
+      const condTd = document.createElement("td");
+      condTd.textContent = cond;
+      tr.appendChild(condTd);
+
+      const countTd = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = "0";
+      input.step = "1";
+      input.value = "0";
+      input.dataset.condition = cond;
+      input.className = "invite-count-input";
+      input.style.width = "80px";
+      countTd.appendChild(input);
+      tr.appendChild(countTd);
+
+      const subtotalTd = document.createElement("td");
+      subtotalTd.textContent = "0";
+      subtotalTd.dataset.condition = cond;
+      subtotalTd.className = "invite-subtotal";
+      tr.appendChild(subtotalTd);
+
+      inviteCalcBody.appendChild(tr);
+    });
+  }
+
+  // ====== 计算积分总和 ======
+  function calculatePoints() {
+    let totalEarned = 0;
+    let totalSpent = 0;
+
+    // 赚积分
+    document.querySelectorAll(".earn-count-input").forEach(input => {
+      const id = parseInt(input.dataset.actionId, 10);
+      const action = earnActions.find(a => a.id === id);
+      if (!action) return;
+      const count = Number(input.value) || 0;
+      const subtotal = count * action.points;
+      totalEarned += subtotal;
+      const td = document.querySelector('.earn-subtotal[data-action-id="' + id + '"]');
+      if (td) td.textContent = subtotal;
+    });
+
+    // 花积分
+    document.querySelectorAll(".spend-count-input").forEach(input => {
+      const id = parseInt(input.dataset.actionId, 10);
+      const action = spendActions.find(a => a.id === id);
+      if (!action) return;
+      const count = Number(input.value) || 0;
+      const subtotal = count * action.points;
+      totalSpent += subtotal;
+      const td = document.querySelector('.spend-subtotal[data-action-id="' + id + '"]');
+      if (td) td.textContent = subtotal;
+    });
+
+    // 邀请系统
+    document.querySelectorAll(".invite-count-input").forEach(input => {
+      const cond = input.dataset.condition;
+      const count = Number(input.value) || 0;
+      const subtotal = calcInvitePointsForCondition(cond, count);
+      totalEarned += subtotal;
+      const td = document.querySelector('.invite-subtotal[data-condition="' + cond + '"]');
+      if (td) td.textContent = subtotal;
+    });
+
+    const balance = totalEarned - totalSpent;
+    totalEarnedSpan.textContent = totalEarned;
+    totalSpentSpan.textContent = totalSpent;
+    balanceSpan.textContent = balance;
+    balanceSpan.classList.remove("positive", "negative");
+    if (balance > 0) balanceSpan.classList.add("positive");
+    else if (balance < 0) balanceSpan.classList.add("negative");
+  }
+
+  function resetAllCounts() {
+    document.querySelectorAll(".earn-count-input, .spend-count-input, .invite-count-input")
+      .forEach(input => input.value = "0");
+    document.querySelectorAll(".earn-subtotal, .spend-subtotal, .invite-subtotal")
+      .forEach(td => td.textContent = "0");
+    totalEarnedSpan.textContent = "0";
+    totalSpentSpan.textContent = "0";
+    balanceSpan.textContent = "0";
+    balanceSpan.classList.remove("positive", "negative");
+  }
+
+  // ====== 本地保存 / 载入 ======
+  function saveConfig() {
+    const data = { earnActions, spendActions, inviteRules };
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      alert("已保存到本浏览器（同一台设备、同一浏览器下会保留）");
+    } catch (e) {
+      console.error(e);
+      alert("保存失败：可能是浏览器禁止了本地存储。");
+    }
+  }
+
+  function loadConfig(showAlert = true) {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      if (showAlert) alert("没有找到之前保存的积分规则。");
+      return false;
+    }
+    try {
+      const data = JSON.parse(raw);
+      earnActions = Array.isArray(data.earnActions) ? data.earnActions : [];
+      spendActions = Array.isArray(data.spendActions) ? data.spendActions : [];
+      inviteRules = Array.isArray(data.inviteRules) ? data.inviteRules : [];
+      recomputeNextId();
+
+      renderEarnActions();
+      renderSpendActions();
+      renderInviteRules();
+      renderCalcTables();
+      resetAllCounts();
+
+      if (showAlert) alert("已载入本地保存的积分规则。");
+      return true;
+    } catch (e) {
+      console.error(e);
+      if (showAlert) alert("保存的数据已损坏，无法读取。");
+      return false;
+    }
+  }
+
+  function clearConfig() {
+    localStorage.removeItem(STORAGE_KEY);
+    alert("已清除本地保存。当前页面上的规则不会自动清空，如需重置请手动修改或导入其他方案。");
+  }
+
+  // ====== 导出 Excel ======
+  function exportConfigToXlsx() {
+    if (typeof XLSX === "undefined") {
+      alert("当前环境无法使用 Excel 导出功能。");
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    // Sheet1：赚积分规则
+    const earnData = [["类型", "途径名称", "每次积分"]];
+    earnActions.forEach(a => {
+      earnData.push(["赚积分", a.name, a.points]);
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(earnData), "EarnRules");
+
+    // Sheet2：花积分规则
+    const spendData = [["类型", "途径名称", "每次积分"]];
+    spendActions.forEach(a => {
+      spendData.push(["花积分", a.name, a.points]);
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(spendData), "SpendRules");
+
+    // Sheet3：邀请规则
+    const inviteData = [["被邀请人条件", "起始人数", "结束人数", "每人积分"]];
+    inviteRules.forEach(r => {
+      inviteData.push([r.condition, r.min, r.max, r.points]);
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(inviteData), "InviteRules");
+
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    const fileName = `积分规则_${y}${m}${d}.xlsx`;
+
+    XLSX.writeFile(wb, fileName);
+  }
+
+  // ====== 从 Excel 导入规则 ======
+  function importConfigFromXlsx(file) {
+    if (!file) return;
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      try {
+        const data = e.target.result;
+        const workbook = XLSX.read(data, { type: "array" });
+
+        const earnSheet = workbook.Sheets["EarnRules"];
+        const spendSheet = workbook.Sheets["SpendRules"];
+        const inviteSheet = workbook.Sheets["InviteRules"];
+
+        if (!earnSheet || !spendSheet) {
+          alert("Excel 文件至少需要包含 EarnRules 和 SpendRules 两个 Sheet。");
+          return;
+        }
+
+        const earnJson = XLSX.utils.sheet_to_json(earnSheet);
+        const spendJson = XLSX.utils.sheet_to_json(spendSheet);
+
+        earnActions = earnJson.map((row, idx) => ({
+          id: idx + 1,
+          name: row["途径名称"],
+          points: Number(row["每次积分"]) || 0
+        }));
+
+        const base = earnActions.length + 1;
+
+        spendActions = spendJson.map((row, idx) => ({
+          id: base + idx,
+          name: row["途径名称"],
+          points: Number(row["每次积分"]) || 0
+        }));
+
+        let inviteBase = base + spendActions.length;
+        if (inviteSheet) {
+          const inviteJson = XLSX.utils.sheet_to_json(inviteSheet);
+          inviteRules = inviteJson.map((row, idx) => ({
+            id: inviteBase + idx,
+            condition: row["被邀请人条件"],
+            min: Number(row["起始人数"]) || 0,
+            max: Number(row["结束人数"]) || 0,
+            points: Number(row["每人积分"]) || 0
+          }));
+        } else {
+          inviteRules = [];
+        }
+
+        recomputeNextId();
+        renderEarnActions();
+        renderSpendActions();
+        renderInviteRules();
+        renderCalcTables();
+        resetAllCounts();
+
+        alert("已成功从 Excel 导入规则！");
+      } catch (err) {
+        console.error(err);
+        alert("Excel 文件解析失败，请检查字段名是否为：途径名称、每次积分 / 被邀请人条件、起始人数、结束人数、每人积分。");
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+  }
+
+  // ====== 事件绑定 ======
+  document.getElementById("addEarnForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = document.getElementById("earnName").value.trim();
+    const pointsVal = Number(document.getElementById("earnPoints").value);
+    if (!name || isNaN(pointsVal) || pointsVal < 0) return;
+    earnActions.push({ id: nextId++, name, points: pointsVal });
+    document.getElementById("earnName").value = "";
+    document.getElementById("earnPoints").value = "";
+    renderEarnActions();
+    renderCalcTables();
+  });
+
+  document.getElementById("addSpendForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = document.getElementById("spendName").value.trim();
+    const pointsVal = Number(document.getElementById("spendPoints").value);
+    if (!name || isNaN(pointsVal) || pointsVal < 0) return;
+    spendActions.push({ id: nextId++, name, points: pointsVal });
+    document.getElementById("spendName").value = "";
+    document.getElementById("spendPoints").value = "";
+    renderSpendActions();
+    renderCalcTables();
+  });
+
+  document.getElementById("addInviteRuleForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const cond = document.getElementById("inviteCondition").value;
+    const minVal = Number(document.getElementById("inviteMin").value);
+    const maxVal = Number(document.getElementById("inviteMax").value);
+    const ptsVal = Number(document.getElementById("invitePoints").value);
+
+    if (isNaN(minVal) || isNaN(maxVal) || isNaN(ptsVal) || minVal < 0 || maxVal < 0) {
+      alert("人数与积分必须为非负数字。");
+      return;
+    }
+    if (maxVal < minVal) {
+      alert("结束人数不能小于起始人数。");
+      return;
+    }
+
+    inviteRules.push({
+      id: nextId++,
+      condition: cond,
+      min: minVal,
+      max: maxVal,
+      points: ptsVal
+    });
+
+    document.getElementById("inviteMin").value = "";
+    document.getElementById("inviteMax").value = "";
+    document.getElementById("invitePoints").value = "";
+
+    renderInviteRules();
+    renderCalcTables();
+  });
+
+  document.getElementById("calcButton").addEventListener("click", calculatePoints);
+  document.getElementById("resetCountsButton").addEventListener("click", resetAllCounts);
+
+  document.getElementById("saveConfigButton").addEventListener("click", saveConfig);
+  document.getElementById("loadConfigButton").addEventListener("click", () => loadConfig(true));
+  document.getElementById("clearConfigButton").addEventListener("click", clearConfig);
+  document.getElementById("exportXlsxButton").addEventListener("click", exportConfigToXlsx);
+
+  document.getElementById("importXlsxButton").addEventListener("click", () => {
+    const input = document.getElementById("xlsxFileInput");
+    input.value = "";
+    input.click();
+  });
+
+  document.getElementById("xlsxFileInput").addEventListener("change", function () {
+    const file = this.files[0];
+    if (file) importConfigFromXlsx(file);
+  });
+
+  // ====== 初始化：优先载入本地保存；没有则用示例 ======
+  function initExamples() {
+    earnActions = [
+      { id: nextId++, name: "完成新手任务", points: 100 },
+      { id: nextId++, name: "每日签到", points: 10 },
+      { id: nextId++, name: "完成一次订单", points: 5 }
+    ];
+    spendActions = [
+      { id: nextId++, name: "兑换5元优惠券", points: 100 },
+      { id: nextId++, name: "积分抽奖一次", points: 20 },
+      { id: nextId++, name: "解锁会员一周", points: 300 }
+    ];
+    inviteRules = [
+      { id: nextId++, condition: "被邀请人注册成功", min: 0, max: 1, points: 10 },
+      { id: nextId++, condition: "被邀请人注册成功", min: 2, max: 5, points: 20 }
+    ];
+
+    renderEarnActions();
+    renderSpendActions();
+    renderInviteRules();
+    renderCalcTables();
+  }
+
+  function init() {
+    const loaded = loadConfig(false);
+    if (!loaded) initExamples();
+  }
+
+  init();
+</script>
+</body>
+</html>
