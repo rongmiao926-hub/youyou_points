@@ -309,13 +309,7 @@
       计算时会按区间拆段累加，例如 0–1 人 10 分/人，2–5 人 20 分/人，总共邀请 4 人 → 1×10 + 3×20。
     </div>
     <form class="inline-form" id="addInviteRuleForm">
-      <select id="inviteCondition">
-        <option value="被邀请人注册成功">被邀请人注册成功</option>
-        <option value="被邀请人首次使用键盘">被邀请人首次使用键盘</option>
-        <option value="被邀请人完成月度付费">被邀请人完成月度付费</option>
-        <option value="被邀请人完成季度付费">被邀请人完成季度付费</option>
-        <option value="被邀请人完成年度付费">被邀请人完成年度付费</option>
-      </select>
+      <input type="text" id="inviteCondition" placeholder="被邀请人条件（如：注册成功）" required />
       <input type="number" id="inviteMin" placeholder="起始人数（min）" min="0" step="1" required />
       <input type="number" id="inviteMax" placeholder="结束人数（max）" min="0" step="1" required />
       <input type="number" id="invitePoints" placeholder="每人积分" min="0" step="1" required />
@@ -466,13 +460,7 @@
 
 <script>
   // ====== 常量 ======
-  const INVITE_CONDITIONS = [
-    "被邀请人注册成功",
-    "被邀请人首次使用键盘",
-    "被邀请人完成月度付费",
-    "被邀请人完成季度付费",
-    "被邀请人完成年度付费"
-  ];
+
   const STORAGE_KEY = "points-config-v2";
 
   // 会员兑换优先级（按花积分“途径名称”匹配）
@@ -815,33 +803,42 @@
       inviteCalcEmptyTip.style.display = "none";
     }
 
-    INVITE_CONDITIONS.forEach(cond => {
-      const tr = document.createElement("tr");
+    const conditions = [...new Set(inviteRules.map(r => r.condition))];
 
-      const condTd = document.createElement("td");
-      condTd.textContent = cond;
-      tr.appendChild(condTd);
+if (conditions.length === 0) {
+  inviteCalcEmptyTip.style.display = "block";
+  return;
+} else {
+  inviteCalcEmptyTip.style.display = "none";
+}
 
-      const countTd = document.createElement("td");
-      const input = document.createElement("input");
-      input.type = "number";
-      input.min = "0";
-      input.step = "1";
-      input.value = "0";
-      input.dataset.condition = cond;
-      input.className = "invite-count-input";
-      input.style.width = "80px";
-      countTd.appendChild(input);
-      tr.appendChild(countTd);
+conditions.forEach(cond => {
+  const tr = document.createElement("tr");
 
-      const subtotalTd = document.createElement("td");
-      subtotalTd.textContent = "0";
-      subtotalTd.dataset.condition = cond;
-      subtotalTd.className = "invite-subtotal";
-      tr.appendChild(subtotalTd);
+  const condTd = document.createElement("td");
+  condTd.textContent = cond;
+  tr.appendChild(condTd);
 
-      inviteCalcBody.appendChild(tr);
-    });
+  const countTd = document.createElement("td");
+  const input = document.createElement("input");
+  input.type = "number";
+  input.min = "0";
+  input.step = "1";
+  input.value = "0";
+  input.dataset.condition = cond;
+  input.className = "invite-count-input";
+  input.style.width = "80px";
+  countTd.appendChild(input);
+  tr.appendChild(countTd);
+
+  const subtotalTd = document.createElement("td");
+  subtotalTd.textContent = "0";
+  subtotalTd.dataset.condition = cond;
+  subtotalTd.className = "invite-subtotal";
+  tr.appendChild(subtotalTd);
+
+  inviteCalcBody.appendChild(tr);
+});
   }
 
   // ====== 计算积分总和 ======
