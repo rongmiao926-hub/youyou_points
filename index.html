@@ -442,6 +442,10 @@
         <span class="result-label">剩余积分：</span>
         <span class="result-value result-balance" id="balance">0</span>
       </div>
+      <div class="result-row">
+        <span class="result-label">按优先级最多可兑换：</span>
+        <span class="result-value" id="redeemSuggestion">—</span>
+      </div>
     </div>
 
     <div class="footer-tip">
@@ -471,6 +475,17 @@
   ];
   const STORAGE_KEY = "points-config-v2";
 
+  // 会员兑换优先级（按花积分“途径名称”匹配）
+  const REDEEM_PRIORITY = [
+    "兑换1年会员",
+    "兑换6个月会员",
+    "兑换3个月会员",
+    "兑换1个月会员",
+    "兑换1周会员",
+    "兑换3天会员",
+    "兑换1天会员"
+  ];
+
   // ====== 全局数据 ======
   let earnActions = [];
   let spendActions = [];
@@ -497,6 +512,7 @@
   const totalEarnedSpan = document.getElementById("totalEarned");
   const totalSpentSpan = document.getElementById("totalSpent");
   const balanceSpan = document.getElementById("balance");
+  const redeemSuggestionSpan = document.getElementById("redeemSuggestion");
 
   // ====== 工具：重算 nextId ======
   function recomputeNextId() {
@@ -679,6 +695,37 @@
     return total;
   }
 
+  // ====== 兑换建议：根据剩余积分和优先级，给出最大可兑换组合 ======
+  function getRedeemSuggestion(balance) {
+    if (balance <= 0) {
+      return "当前积分为 0，无法兑换。";
+    }
+
+    let remaining = balance;
+    const picked = [];
+
+    REDEEM_PRIORITY.forEach(name => {
+      const action = spendActions.find(a => a.name === name);
+      if (!action || !action.points || action.points <= 0) return;
+
+      const cnt = Math.floor(remaining / action.points);
+      if (cnt > 0) {
+        const displayName = name.replace(/^兑换/, ""); // 去掉“兑换”两个字
+        picked.push({ name: displayName, count: cnt });
+        remaining -= cnt * action.points;
+      }
+    });
+
+    if (picked.length === 0) {
+      return "当前积分不足以兑换任何会员档位。";
+    }
+
+    const parts = picked.map(item =>
+      item.count === 1 ? item.name : `${item.name}*${item.count}`
+    );
+    return parts.join(" + ");
+  }
+
   // ====== 渲染模拟区域 ======
   function renderCalcTables() {
     // 赚积分
@@ -843,6 +890,9 @@
     balanceSpan.classList.remove("positive", "negative");
     if (balance > 0) balanceSpan.classList.add("positive");
     else if (balance < 0) balanceSpan.classList.add("negative");
+
+    // 更新可兑换提示
+    redeemSuggestionSpan.textContent = getRedeemSuggestion(balance);
   }
 
   function resetAllCounts() {
@@ -854,6 +904,7 @@
     totalSpentSpan.textContent = "0";
     balanceSpan.textContent = "0";
     balanceSpan.classList.remove("positive", "negative");
+    redeemSuggestionSpan.textContent = "—";
   }
 
   // ====== 本地保存 / 载入 ======
