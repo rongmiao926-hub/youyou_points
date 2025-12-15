@@ -627,8 +627,10 @@
 
     // 按条件 + min 排序，更清晰
     const sorted = [...inviteRules].sort((a, b) => {
-      if (a.condition === b.condition) return a.min - b.min || a.max - b.max;
-      return INVITE_CONDITIONS.indexOf(a.condition) - INVITE_CONDITIONS.indexOf(b.condition);
+    const ac = (a.condition || "").trim();
+    const bc = (b.condition || "").trim();
+    if (ac === bc) return (a.min - b.min) || (a.max - b.max);
+    return ac.localeCompare(bc, "zh-CN");
     });
 
     sorted.forEach(rule => {
@@ -988,6 +990,20 @@ conditions.forEach(cond => {
     XLSX.writeFile(wb, fileName);
   }
 
+  function getByAliases(row, aliases) {
+  const keys = Object.keys(row || {});
+  for (const a of aliases) {
+    const hit = keys.find(k => String(k).trim() === a);
+    if (hit !== undefined) return row[hit];
+  }
+  return undefined;
+}
+
+function toNum(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
   // ====== 从 Excel 导入规则 ======
   function importConfigFromXlsx(file) {
     if (!file) return;
@@ -1007,33 +1023,42 @@ conditions.forEach(cond => {
           return;
         }
 
-        const earnJson = XLSX.utils.sheet_to_json(earnSheet);
-        const spendJson = XLSX.utils.sheet_to_json(spendSheet);
+        const earnJson = XLSX.utils.sheet_to_json(earnSheet, { defval: "" });
+        const spendJson = XLSX.utils.sheet_to_json(spendSheet, { defval: "" });
 
-        earnActions = earnJson.map((row, idx) => ({
-          id: idx + 1,
-          name: row["途径名称"],
-          points: Number(row["每次积分"]) || 0
-        }));
 
-        const base = earnActions.length + 1;
+        earnActions = earnJson
+  .map((row, idx) => ({
+    id: idx + 1,
+    name: String(getByAliases(row, ["途径名称"]) ?? "").trim(),
+    points: toNum(getByAliases(row, ["每次积分"]))
+  }))
+  .filter(r => r.name);
 
-        spendActions = spendJson.map((row, idx) => ({
-          id: base + idx,
-          name: row["途径名称"],
-          points: Number(row["每次积分"]) || 0
-        }));
+const base = earnActions.length + 1;
+
+spendActions = spendJson
+  .map((row, idx) => ({
+    id: base + idx,
+    name: String(getByAliases(row, ["途径名称"]) ?? "").trim(),
+    points: toNum(getByAliases(row, ["每次积分"]))
+  }))
+  .filter(r => r.name);
+
 
         let inviteBase = base + spendActions.length;
         if (inviteSheet) {
           const inviteJson = XLSX.utils.sheet_to_json(inviteSheet);
-          inviteRules = inviteJson.map((row, idx) => ({
-            id: inviteBase + idx,
-            condition: row["被邀请人条件"],
-            min: Number(row["起始人数"]) || 0,
-            max: Number(row["结束人数"]) || 0,
-            points: Number(row["每人积分"]) || 0
-          }));
+          inviteRules = inviteJson
+  .map((row, idx) => ({
+    id: inviteBase + idx,
+    condition: String(getByAliases(row, ["被邀请人条件"]) ?? "").trim(),
+    min: toNum(getByAliases(row, ["起始人数"])),
+    max: toNum(getByAliases(row, ["结束人数"])),
+    points: toNum(getByAliases(row, ["每人积分"]))
+  }))
+  .filter(r => r.condition);
+;
         } else {
           inviteRules = [];
         }
