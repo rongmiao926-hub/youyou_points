@@ -5,36 +5,15 @@
   <title>积分系统设计与模拟小工具</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- 样式 -->
   <style>
     * {
       box-sizing: border-box;
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
     }
-
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f3f4f6;
-      color: #111827;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: 24px auto;
-      padding: 16px;
-    }
-
-    h1 {
-      font-size: 24px;
-      margin-bottom: 8px;
-    }
-
-    .subtitle {
-      color: #6b7280;
-      margin-bottom: 24px;
-      font-size: 14px;
-    }
+    body { margin: 0; padding: 0; background: #f3f4f6; color: #111827; }
+    .container { max-width: 1100px; margin: 24px auto; padding: 16px; }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    .subtitle { color: #6b7280; margin-bottom: 24px; font-size: 14px; }
 
     .section {
       background: #ffffff;
@@ -43,15 +22,14 @@
       margin-bottom: 16px;
       box-shadow: 0 8px 16px rgba(15, 23, 42, 0.04);
     }
-
     .section h2 {
       font-size: 18px;
       margin: 0 0 10px;
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
     }
-
     .section h2 span.badge {
       font-size: 12px;
       background: #eef2ff;
@@ -59,12 +37,7 @@
       padding: 2px 8px;
       border-radius: 999px;
     }
-
-    .section-desc {
-      font-size: 13px;
-      color: #6b7280;
-      margin-bottom: 12px;
-    }
+    .section-desc { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
 
     form.inline-form {
       display: flex;
@@ -74,20 +47,14 @@
       align-items: center;
     }
 
-    input[type="text"],
-    input[type="number"],
-    select {
+    input[type="text"], input[type="number"], select {
       padding: 6px 8px;
       border-radius: 8px;
       border: 1px solid #d1d5db;
       font-size: 13px;
       min-width: 0;
     }
-
-    input[type="number"] {
-      width: 110px;
-    }
-
+    input[type="number"] { width: 110px; }
     input:focus, select:focus {
       outline: none;
       border-color: #4f46e5;
@@ -105,56 +72,17 @@
       gap: 4px;
       white-space: nowrap;
     }
+    button.primary { background: #4f46e5; color: #ffffff; }
+    button.secondary { background: #e5e7eb; color: #374151; }
+    button.danger { background: #fee2e2; color: #b91c1c; }
+    button:disabled { opacity: 0.6; cursor: default; }
 
-    button.primary {
-      background: #4f46e5;
-      color: #ffffff;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 6px; }
+    th, td { border-bottom: 1px solid #e5e7eb; padding: 6px 4px; text-align: left; vertical-align: top; }
+    th { font-weight: 600; color: #4b5563; background: #f9fafb; }
+    tr:last-child td { border-bottom: none; }
 
-    button.secondary {
-      background: #e5e7eb;
-      color: #374151;
-    }
-
-    button.danger {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: default;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      margin-top: 6px;
-    }
-
-    th, td {
-      border-bottom: 1px solid #e5e7eb;
-      padding: 6px 4px;
-      text-align: left;
-    }
-
-    th {
-      font-weight: 600;
-      color: #4b5563;
-      background: #f9fafb;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    .empty-tip {
-      font-size: 12px;
-      color: #9ca3af;
-      padding: 4px 0;
-    }
-
+    .empty-tip { font-size: 12px; color: #9ca3af; padding: 4px 0; }
     .tag {
       display: inline-block;
       font-size: 11px;
@@ -169,18 +97,15 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 16px;
     }
-
-    @media (max-width: 768px) {
-      .calc-columns {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media (max-width: 768px) { .calc-columns { grid-template-columns: 1fr; } }
 
     .calc-section-title {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 4px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .result-box {
@@ -193,38 +118,71 @@
       display: grid;
       gap: 4px;
     }
+    .result-row { display: flex; justify-content: space-between; gap: 10px; }
+    .result-label { color: #6b7280; }
+    .result-value { font-weight: 600; }
+    .result-balance.positive { color: #16a34a; }
+    .result-balance.negative { color: #b91c1c; }
+    .footer-tip { margin-top: 8px; font-size: 11px; color: #9ca3af; }
 
-    .result-row {
+    .tiny-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #374151;
+      user-select: none;
+    }
+    .tiny-switch input { transform: translateY(1px); }
+    .muted { color: #9ca3af; }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 768px) { .mini-grid { grid-template-columns: 1fr; } }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      font-size: 12px;
+      color: #374151;
+      flex-wrap: wrap;
+    }
+
+    .check-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    @media (max-width: 768px) { .check-list { grid-template-columns: 1fr; } }
+
+    .check-item {
       display: flex;
-      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      color: #374151;
+      padding: 6px 8px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fafafa;
     }
+    .check-item input { margin-top: 2px; }
+    .check-item .sub { color: #9ca3af; font-size: 11px; margin-top: 2px; }
 
-    .result-label {
-      color: #6b7280;
-    }
-
-    .result-value {
-      font-weight: 600;
-    }
-
-    .result-balance.positive {
-      color: #16a34a;
-    }
-
-    .result-balance.negative {
-      color: #b91c1c;
-    }
-
-    .footer-tip {
-      margin-top: 8px;
-      font-size: 11px;
-      color: #9ca3af;
-    }
+    .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   </style>
 
-  <!-- 用于导出/导入 Excel 的库（SheetJS） -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
+
 <body>
 <div class="container">
   <h1>积分系统设计与模拟小工具</h1>
@@ -241,27 +199,26 @@
     <div class="section-desc">
       例如：完成新手任务 +100 分、每日签到 +10 分、完成订单 +5 分等。
     </div>
+
     <form class="inline-form" id="addEarnForm">
       <input type="text" id="earnName" placeholder="途径名称（如：每日签到）" required />
       <input type="number" id="earnPoints" placeholder="每次获得积分" min="0" step="1" required />
-      <button type="submit" class="primary">
-        + 添加赚积分途径
-      </button>
+      <button type="submit" class="primary">+ 添加赚积分途径</button>
     </form>
+
     <div id="earnListWrapper">
       <table>
         <thead>
         <tr>
-          <th style="width: 45%;">途径名称</th>
-          <th style="width: 30%;">每次获得积分</th>
-          <th style="width: 25%;">操作</th>
+          <th style="width: 40%;">途径名称</th>
+          <th style="width: 20%;">每次获得积分</th>
+          <th style="width: 25%;">一次性奖励</th>
+          <th style="width: 15%;">操作</th>
         </tr>
         </thead>
         <tbody id="earnTableBody"></tbody>
       </table>
-      <div id="earnEmptyTip" class="empty-tip">
-        还没有配置赚积分方式，可以先添加一两条示例。
-      </div>
+      <div id="earnEmptyTip" class="empty-tip">还没有配置赚积分方式，可以先添加一两条示例。</div>
     </div>
   </section>
 
@@ -274,13 +231,13 @@
     <div class="section-desc">
       例如：兑换优惠券 -100 分、抽奖一次 -20 分、解锁会员权益 -500 分等。
     </div>
+
     <form class="inline-form" id="addSpendForm">
       <input type="text" id="spendName" placeholder="途径名称（如：兑换5元券）" required />
       <input type="number" id="spendPoints" placeholder="每次消耗积分" min="0" step="1" required />
-      <button type="submit" class="primary">
-        + 添加花积分途径
-      </button>
+      <button type="submit" class="primary">+ 添加花积分途径</button>
     </form>
+
     <div id="spendListWrapper">
       <table>
         <thead>
@@ -292,9 +249,7 @@
         </thead>
         <tbody id="spendTableBody"></tbody>
       </table>
-      <div id="spendEmptyTip" class="empty-tip">
-        还没有配置花积分方式，可以先添加一两条示例。
-      </div>
+      <div id="spendEmptyTip" class="empty-tip">还没有配置花积分方式，可以先添加一两条示例。</div>
     </div>
   </section>
 
@@ -308,15 +263,15 @@
       每条规则形如：邀请【min】至【max】个用户，被邀请人「条件」，得【积分】积分 / 人。<br>
       计算时会按区间拆段累加，例如 0–1 人 10 分/人，2–5 人 20 分/人，总共邀请 4 人 → 1×10 + 3×20。
     </div>
+
     <form class="inline-form" id="addInviteRuleForm">
       <input type="text" id="inviteCondition" placeholder="被邀请人条件（如：注册成功）" required />
-      <input type="number" id="inviteMin" placeholder="min人数" min="0" step="1" required />
-      <input type="number" id="inviteMax" placeholder="max人数" min="0" step="1" required />
+      <input type="number" id="inviteMin" placeholder="起始人数（min）" min="0" step="1" required />
+      <input type="number" id="inviteMax" placeholder="结束人数（max）" min="0" step="1" required />
       <input type="number" id="invitePoints" placeholder="每人积分" min="0" step="1" required />
-      <button type="submit" class="primary">
-        + 添加邀请规则
-      </button>
+      <button type="submit" class="primary">+ 添加邀请规则</button>
     </form>
+
     <div id="inviteRuleListWrapper">
       <table>
         <thead>
@@ -341,35 +296,38 @@
       4. 积分模拟计算
       <span class="badge">使用次数 → 剩余积分</span>
     </h2>
+
     <div class="section-desc">
-      第一步：填写每种「赚积分」途径的使用次数，算出总共赚了多少分。<br>
+      第一步：填写每种「赚积分」途径的使用次数（一次性奖励用“已完成”），算出总共赚了多少分。<br>
       第二步：填写每种「花积分」途径的使用次数，看花掉多少分。<br>
       第三步：填写邀请系统中各条件的邀请人数，按阶梯规则自动算出邀请积分。
     </div>
 
     <div class="calc-columns">
-      <!-- 左侧：赚积分 + 邀请系统 -->
       <div>
         <div class="calc-section-title">
           <strong>赚积分次数</strong>
           <span class="tag">从上面的来源列表自动生成</span>
+
+          <label class="tiny-switch" style="margin-left:auto;">
+            <input type="checkbox" id="allOneTimeDoneSwitch" />
+            所有一次性奖励已完成
+          </label>
         </div>
+
         <table>
           <thead>
           <tr>
             <th>途径</th>
             <th>每次积分</th>
-            <th>使用次数</th>
+            <th>使用次数 / 状态</th>
             <th>小计</th>
           </tr>
           </thead>
           <tbody id="earnCalcBody"></tbody>
         </table>
-        <div id="earnCalcEmptyTip" class="empty-tip">
-          暂无赚积分配置，请先在上方添加「赚积分的途径」。
-        </div>
+        <div id="earnCalcEmptyTip" class="empty-tip">暂无赚积分配置，请先在上方添加「赚积分的途径」。</div>
 
-        <!-- 邀请系统积分 -->
         <div style="margin-top: 16px;">
           <div class="calc-section-title">
             <strong>邀请系统积分</strong>
@@ -391,12 +349,12 @@
         </div>
       </div>
 
-      <!-- 右侧：花积分 -->
       <div>
         <div class="calc-section-title">
           <strong>花积分次数</strong>
           <span class="tag">从上面的消耗列表自动生成</span>
         </div>
+
         <table>
           <thead>
           <tr>
@@ -408,19 +366,13 @@
           </thead>
           <tbody id="spendCalcBody"></tbody>
         </table>
-        <div id="spendCalcEmptyTip" class="empty-tip">
-          暂无花积分配置，请先在上方添加「花积分的途径」。
-        </div>
+        <div id="spendCalcEmptyTip" class="empty-tip">暂无花积分配置，请先在上方添加「花积分的途径」。</div>
       </div>
     </div>
 
     <div style="margin-top: 12px; display:flex; gap:8px; flex-wrap:wrap;">
-      <button id="calcButton" class="primary">
-        💰 计算积分
-      </button>
-      <button id="resetCountsButton" class="secondary">
-        清空所有次数
-      </button>
+      <button id="calcButton" class="primary">💰 计算积分</button>
+      <button id="resetCountsButton" class="secondary">清空所有次数</button>
     </div>
 
     <div class="result-box">
@@ -446,7 +398,6 @@
       建议：可以先导出一版 Excel 当作「积分策略方案 v1」，之后调整规则再另存一版，方便对比不同方案。
     </div>
 
-    <!-- 保存 / 载入 / 导出 / 导入按钮 -->
     <div style="margin-top: 10px; display:flex; flex-wrap:wrap; gap:8px;">
       <button id="saveConfigButton" class="secondary">💾 保存当前积分规则</button>
       <button id="loadConfigButton" class="secondary">📂 载入已保存规则</button>
@@ -455,15 +406,82 @@
       <button id="importXlsxButton" class="secondary">📥 导入规则（Excel）</button>
       <input type="file" id="xlsxFileInput" accept=".xlsx,.xls" style="display:none;" />
     </div>
+
+    <!-- ✅ 新增：规则下兑换预测表 -->
+    <div style="margin-top: 18px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
+      <h2 style="margin:0 0 10px; font-size:16px;">
+        5. 规则下兑换预测表
+        <span class="badge">n1~n2 全量枚举</span>
+      </h2>
+      <div class="section-desc">
+        选择“完成条件”（赚积分途径可以选多个，其中可选择「完成所有一次性奖励」），再设置邀请人数范围 n1～n2，并选择若干被邀请人条件（可加多条）。系统会输出每个 n 的可兑换结果与“距离下一档位”。
+      </div>
+
+      <div class="mini-grid">
+        <div>
+          <div class="pill" style="margin-bottom:10px;">
+            <strong>完成哪些赚积分途径</strong>
+            <span class="muted">（每条默认按完成 1 次计分）</span>
+          </div>
+
+          <div class="check-list" id="scenarioEarnChecklist"></div>
+          <div class="empty-tip" id="scenarioEarnEmptyTip" style="display:none;">
+            暂无赚积分配置。
+          </div>
+        </div>
+
+        <div>
+          <div class="pill" style="margin-bottom:10px;">
+            <strong>邀请人数范围</strong>
+          </div>
+
+          <div class="inline-form" style="margin-bottom:8px;">
+            <input type="number" id="scenarioN1" min="0" step="1" value="0" placeholder="数字1" />
+            <span class="muted">到</span>
+            <input type="number" id="scenarioN2" min="0" step="1" value="10" placeholder="数字2" />
+            <span class="muted">人</span>
+          </div>
+
+          <div class="pill" style="margin-bottom:10px;">
+            <strong>被邀请人条件（可添加）</strong>
+            <span class="muted">（同一个 n 对每个条件分别计算并累加）</span>
+          </div>
+
+          <div id="scenarioConditionRows" style="display:grid; gap:8px;"></div>
+
+          <div class="row-actions" style="margin-top:10px;">
+            <button id="scenarioAddCondBtn" class="secondary">+ 添加条件</button>
+            <button id="scenarioGenBtn" class="primary">生成表格</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 12px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="scenarioCopyBtn" class="secondary" disabled>📋 复制表格内容</button>
+        <button id="scenarioExportBtn" class="secondary" disabled>📑 导出表格为 Excel</button>
+      </div>
+
+      <table id="scenarioTable" style="margin-top:10px;">
+        <thead>
+        <tr>
+          <th style="width: 45%;">完成条件</th>
+          <th style="width: 30%;">可兑换奖励</th>
+          <th style="width: 25%;">距离下一档位</th>
+        </tr>
+        </thead>
+        <tbody id="scenarioTableBody"></tbody>
+      </table>
+      <div id="scenarioEmptyTip" class="empty-tip">
+        还没生成表格。你可以先点「添加条件」选两条，再生成看看。
+      </div>
+    </div>
+
   </section>
 </div>
 
 <script>
-  // ====== 常量 ======
-
   const STORAGE_KEY = "points-config-v2";
 
-  // 会员兑换优先级（按花积分“途径名称”匹配）
   const REDEEM_PRIORITY = [
     "兑换1年会员",
     "兑换6个月会员",
@@ -474,13 +492,13 @@
     "兑换1天会员"
   ];
 
-  // ====== 全局数据 ======
-  let earnActions = [];
-  let spendActions = [];
-  let inviteRules = []; // {id, condition, min, max, points}
+  // ===== 数据 =====
+  let earnActions = [];   // {id, name, points, oneTime}
+  let spendActions = [];  // {id, name, points}
+  let inviteRules = [];   // {id, condition, min, max, points}
   let nextId = 1;
 
-  // DOM 引用
+  // ===== DOM =====
   const earnTableBody = document.getElementById("earnTableBody");
   const spendTableBody = document.getElementById("spendTableBody");
   const earnEmptyTip = document.getElementById("earnEmptyTip");
@@ -502,24 +520,39 @@
   const balanceSpan = document.getElementById("balance");
   const redeemSuggestionSpan = document.getElementById("redeemSuggestion");
 
-  // ====== 工具：重算 nextId ======
+  const allOneTimeDoneSwitch = document.getElementById("allOneTimeDoneSwitch");
+
+  // ===== 新增模块 DOM =====
+  const scenarioEarnChecklist = document.getElementById("scenarioEarnChecklist");
+  const scenarioEarnEmptyTip = document.getElementById("scenarioEarnEmptyTip");
+  const scenarioN1 = document.getElementById("scenarioN1");
+  const scenarioN2 = document.getElementById("scenarioN2");
+  const scenarioConditionRows = document.getElementById("scenarioConditionRows");
+  const scenarioAddCondBtn = document.getElementById("scenarioAddCondBtn");
+  const scenarioGenBtn = document.getElementById("scenarioGenBtn");
+  const scenarioCopyBtn = document.getElementById("scenarioCopyBtn");
+  const scenarioExportBtn = document.getElementById("scenarioExportBtn");
+  const scenarioTableBody = document.getElementById("scenarioTableBody");
+  const scenarioEmptyTip = document.getElementById("scenarioEmptyTip");
+
+  // 内部状态：条件行
+  let scenarioCondRowIds = []; // array of numeric ids
+  let scenarioCondNextId = 1;
+
+  // ====== utils ======
   function recomputeNextId() {
     const all = [...earnActions, ...spendActions, ...inviteRules];
-    if (all.length === 0) {
-      nextId = 1;
-    } else {
-      nextId = Math.max(...all.map(a => a.id || 0)) + 1;
-    }
+    nextId = all.length ? (Math.max(...all.map(a => a.id || 0)) + 1) : 1;
   }
 
-  // ====== 赚积分列表（可编辑积分） ======
+  function uniqInviteConditions() {
+    return [...new Set(inviteRules.map(r => (r.condition || "").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"zh-CN"));
+  }
+
+  // ===== Earn list =====
   function renderEarnActions() {
     earnTableBody.innerHTML = "";
-    if (earnActions.length === 0) {
-      earnEmptyTip.style.display = "block";
-    } else {
-      earnEmptyTip.style.display = "none";
-    }
+    earnEmptyTip.style.display = earnActions.length ? "none" : "block";
 
     earnActions.forEach(action => {
       const tr = document.createElement("tr");
@@ -533,20 +566,31 @@
       input.type = "number";
       input.min = "0";
       input.step = "1";
-      input.value = action.points;
+      input.value = action.points ?? 0;
       input.style.width = "80px";
       input.addEventListener("change", () => {
         const val = Number(input.value);
-        action.points = isNaN(val) || val < 0 ? 0 : val;
+        action.points = (Number.isFinite(val) && val >= 0) ? val : 0;
         input.value = action.points;
         renderCalcTables();
+        renderScenarioPanel(); // ✅ 同步刷新预测模块
       });
       pointsTd.appendChild(input);
-      const span = document.createElement("span");
-      span.textContent = " 分";
-      span.style.marginLeft = "4px";
-      pointsTd.appendChild(span);
+      pointsTd.appendChild(Object.assign(document.createElement("span"), { textContent: " 分", style: "margin-left:4px;" }));
       tr.appendChild(pointsTd);
+
+      const oneTimeTd = document.createElement("td");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = !!action.oneTime;
+      cb.addEventListener("change", () => {
+        action.oneTime = cb.checked;
+        renderCalcTables();
+        renderScenarioPanel(); // ✅ 同步刷新预测模块
+      });
+      oneTimeTd.appendChild(cb);
+      oneTimeTd.appendChild(Object.assign(document.createElement("span"), { textContent: " 是一次性" }));
+      tr.appendChild(oneTimeTd);
 
       const opTd = document.createElement("td");
       const delBtn = document.createElement("button");
@@ -556,6 +600,7 @@
         earnActions = earnActions.filter(a => a.id !== action.id);
         renderEarnActions();
         renderCalcTables();
+        renderScenarioPanel(); // ✅
       });
       opTd.appendChild(delBtn);
       tr.appendChild(opTd);
@@ -564,14 +609,9 @@
     });
   }
 
-  // ====== 花积分列表（可编辑积分） ======
   function renderSpendActions() {
     spendTableBody.innerHTML = "";
-    if (spendActions.length === 0) {
-      spendEmptyTip.style.display = "block";
-    } else {
-      spendEmptyTip.style.display = "none";
-    }
+    spendEmptyTip.style.display = spendActions.length ? "none" : "block";
 
     spendActions.forEach(action => {
       const tr = document.createElement("tr");
@@ -585,19 +625,17 @@
       input.type = "number";
       input.min = "0";
       input.step = "1";
-      input.value = action.points;
+      input.value = action.points ?? 0;
       input.style.width = "80px";
       input.addEventListener("change", () => {
         const val = Number(input.value);
-        action.points = isNaN(val) || val < 0 ? 0 : val;
+        action.points = (Number.isFinite(val) && val >= 0) ? val : 0;
         input.value = action.points;
         renderCalcTables();
+        // 兑换逻辑依赖 spendActions，预测模块也要同步
       });
       pointsTd.appendChild(input);
-      const span = document.createElement("span");
-      span.textContent = " 分";
-      span.style.marginLeft = "4px";
-      pointsTd.appendChild(span);
+      pointsTd.appendChild(Object.assign(document.createElement("span"), { textContent: " 分", style: "margin-left:4px;" }));
       tr.appendChild(pointsTd);
 
       const opTd = document.createElement("td");
@@ -616,21 +654,15 @@
     });
   }
 
-  // ====== 邀请规则列表 ======
   function renderInviteRules() {
     inviteRuleTableBody.innerHTML = "";
-    if (inviteRules.length === 0) {
-      inviteRuleEmptyTip.style.display = "block";
-    } else {
-      inviteRuleEmptyTip.style.display = "none";
-    }
+    inviteRuleEmptyTip.style.display = inviteRules.length ? "none" : "block";
 
-    // 按条件 + min 排序，更清晰
     const sorted = [...inviteRules].sort((a, b) => {
-    const ac = (a.condition || "").trim();
-    const bc = (b.condition || "").trim();
-    if (ac === bc) return (a.min - b.min) || (a.max - b.max);
-    return ac.localeCompare(bc, "zh-CN");
+      const ac = (a.condition || "").trim();
+      const bc = (b.condition || "").trim();
+      if (ac === bc) return (a.min - b.min) || (a.max - b.max);
+      return ac.localeCompare(bc, "zh-CN");
     });
 
     sorted.forEach(rule => {
@@ -657,6 +689,7 @@
         inviteRules = inviteRules.filter(r => r.id !== rule.id);
         renderInviteRules();
         renderCalcTables();
+        renderScenarioPanel(); // ✅ 条件下拉要刷新
       });
       opTd.appendChild(delBtn);
       tr.appendChild(opTd);
@@ -665,34 +698,27 @@
     });
   }
 
-  // ====== 计算：根据某个条件的阶梯规则，算邀请积分 ======
+  // ===== Invite calc =====
   function calcInvitePointsForCondition(condition, totalInvites) {
-  const condKey = (condition || "").trim();
-  const rules = inviteRules.filter(r => (r.condition || "").trim() === condKey);
-  if (rules.length === 0 || totalInvites <= 0) return 0;
+    const rules = inviteRules.filter(r => r.condition === condition);
+    if (!rules.length || totalInvites <= 0) return 0;
 
-  const sorted = [...rules].sort((a, b) => a.min - b.min || a.max - b.max);
-  let total = 0;
+    const sorted = [...rules].sort((a, b) => a.min - b.min || a.max - b.max);
+    let total = 0;
 
-  sorted.forEach(rule => {
-    const start = Math.max(rule.min, 1);
-    if (totalInvites < start) return;
-    const end = Math.min(rule.max, totalInvites);
-    if (end < start) return;
-    const count = end - start + 1;
-    total += count * rule.points;
-  });
+    sorted.forEach(rule => {
+      const start = Math.max(rule.min, 1);
+      if (totalInvites < start) return;
+      const end = Math.min(rule.max, totalInvites);
+      if (end < start) return;
+      total += (end - start + 1) * rule.points;
+    });
 
-  return total;
-}
+    return total;
+  }
 
-
-  // ====== 兑换建议：根据剩余积分和优先级，给出最大可兑换组合 ======
-  function getRedeemSuggestion(balance) {
-    if (balance <= 0) {
-      return "当前积分为 0，无法兑换。";
-    }
-
+  // ===== Redeem (带“剩余”输出) =====
+  function redeemGreedy(balance) {
     let remaining = balance;
     const picked = [];
 
@@ -702,27 +728,43 @@
 
       const cnt = Math.floor(remaining / action.points);
       if (cnt > 0) {
-        const displayName = name.replace(/^兑换/, ""); // 去掉“兑换”两个字
-        picked.push({ name: displayName, count: cnt });
+        picked.push({ name: name.replace(/^兑换/, ""), count: cnt, cost: action.points });
         remaining -= cnt * action.points;
       }
     });
 
-    if (picked.length === 0) {
-      return "当前积分不足以兑换任何会员档位。";
-    }
-
-    const parts = picked.map(item =>
-      item.count === 1 ? item.name : `${item.name}*${item.count}`
-    );
-    return parts.join(" + ");
+    return { picked, remaining };
   }
 
-  // ====== 渲染模拟区域 ======
+  function getRedeemSuggestion(balance) {
+    if (balance <= 0) return "当前积分为 0，无法兑换。";
+    const { picked } = redeemGreedy(balance);
+    if (!picked.length) return "当前积分不足以兑换任何会员档位。";
+    return picked.map(x => x.count === 1 ? x.name : `${x.name}*${x.count}`).join(" + ");
+  }
+
+  function getNextTierGapText(remaining) {
+    // 找到“再兑换 1 个任意档位”所需的最小差值
+    let best = null; // {gap, name}
+    REDEEM_PRIORITY.forEach(name => {
+      const action = spendActions.find(a => a.name === name);
+      if (!action || !action.points || action.points <= 0) return;
+      const cost = action.points;
+      if (remaining >= cost) return; // 能兑就不会“差”
+      const gap = cost - remaining;
+      if (best === null || gap < best.gap) {
+        best = { gap, name: name.replace(/^兑换/, "") };
+      }
+    });
+    if (!best) return "—";
+    return `还差 ${best.gap} 积分可以再兑换 ${best.name}`;
+  }
+
+  // ===== 渲染模拟区 =====
   function renderCalcTables() {
-    // 赚积分
+    // Earn
     earnCalcBody.innerHTML = "";
-    if (earnActions.length === 0) {
+    if (!earnActions.length) {
       earnCalcEmptyTip.style.display = "block";
     } else {
       earnCalcEmptyTip.style.display = "none";
@@ -734,20 +776,44 @@
         tr.appendChild(nameTd);
 
         const pointsTd = document.createElement("td");
-        pointsTd.textContent = action.points;
+        pointsTd.textContent = action.points ?? 0;
         tr.appendChild(pointsTd);
 
-        const countTd = document.createElement("td");
-        const input = document.createElement("input");
-        input.type = "number";
-        input.min = "0";
-        input.step = "1";
-        input.value = "0";
-        input.dataset.actionId = action.id;
-        input.className = "earn-count-input";
-        input.style.width = "80px";
-        countTd.appendChild(input);
-        tr.appendChild(countTd);
+        const usageTd = document.createElement("td");
+
+        if (action.oneTime) {
+          const wrap = document.createElement("label");
+          wrap.className = "tiny-switch";
+
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.className = "earn-onetime-done";
+          cb.dataset.actionId = action.id;
+
+          const allDone = !!allOneTimeDoneSwitch.checked;
+          cb.checked = allDone ? true : false;
+          cb.disabled = allDone;
+
+          const txt = document.createElement("span");
+          txt.textContent = allDone ? "已完成（由总开关控制）" : "已完成";
+          if (allDone) txt.classList.add("muted");
+
+          wrap.appendChild(cb);
+          wrap.appendChild(txt);
+          usageTd.appendChild(wrap);
+        } else {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "0";
+          input.step = "1";
+          input.value = "0";
+          input.dataset.actionId = action.id;
+          input.className = "earn-count-input";
+          input.style.width = "80px";
+          usageTd.appendChild(input);
+        }
+
+        tr.appendChild(usageTd);
 
         const subtotalTd = document.createElement("td");
         subtotalTd.textContent = "0";
@@ -759,9 +825,9 @@
       });
     }
 
-    // 花积分
+    // Spend
     spendCalcBody.innerHTML = "";
-    if (spendActions.length === 0) {
+    if (!spendActions.length) {
       spendCalcEmptyTip.style.display = "block";
     } else {
       spendCalcEmptyTip.style.display = "none";
@@ -773,7 +839,7 @@
         tr.appendChild(nameTd);
 
         const pointsTd = document.createElement("td");
-        pointsTd.textContent = action.points;
+        pointsTd.textContent = action.points ?? 0;
         tr.appendChild(pointsTd);
 
         const countTd = document.createElement("td");
@@ -798,81 +864,103 @@
       });
     }
 
-    // 邀请系统模拟
+    // Invite
     inviteCalcBody.innerHTML = "";
-    const conditions = [...new Set(inviteRules.map(r => (r.condition || "").trim()).filter(Boolean))];
+    const conditions = uniqInviteConditions();
+    if (!conditions.length) {
+      inviteCalcEmptyTip.style.display = "block";
+    } else {
+      inviteCalcEmptyTip.style.display = "none";
+      conditions.forEach(cond => {
+        const tr = document.createElement("tr");
 
-if (conditions.length === 0) {
-  inviteCalcEmptyTip.style.display = "block";
-  return;
-} else {
-  inviteCalcEmptyTip.style.display = "none";
-}
+        const condTd = document.createElement("td");
+        condTd.textContent = cond;
+        tr.appendChild(condTd);
 
-conditions.forEach(cond => {
-  const tr = document.createElement("tr");
+        const countTd = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.step = "1";
+        input.value = "0";
+        input.dataset.condition = cond;
+        input.className = "invite-count-input";
+        input.style.width = "80px";
+        countTd.appendChild(input);
+        tr.appendChild(countTd);
 
-  const condTd = document.createElement("td");
-  condTd.textContent = cond;
-  tr.appendChild(condTd);
+        const subtotalTd = document.createElement("td");
+        subtotalTd.textContent = "0";
+        subtotalTd.dataset.condition = cond;
+        subtotalTd.className = "invite-subtotal";
+        tr.appendChild(subtotalTd);
 
-  const countTd = document.createElement("td");
-  const input = document.createElement("input");
-  input.type = "number";
-  input.min = "0";
-  input.step = "1";
-  input.value = "0";
-  input.dataset.condition = cond;
-  input.className = "invite-count-input";
-  input.style.width = "80px";
-  countTd.appendChild(input);
-  tr.appendChild(countTd);
-
-  const subtotalTd = document.createElement("td");
-  subtotalTd.textContent = "0";
-  subtotalTd.dataset.condition = cond;
-  subtotalTd.className = "invite-subtotal";
-  tr.appendChild(subtotalTd);
-
-  inviteCalcBody.appendChild(tr);
-});
+        inviteCalcBody.appendChild(tr);
+      });
+    }
   }
 
-  // ====== 计算积分总和 ======
+  // ===== 计算模拟 =====
   function calculatePoints() {
     let totalEarned = 0;
     let totalSpent = 0;
 
-    // 赚积分
     document.querySelectorAll(".earn-count-input").forEach(input => {
       const id = parseInt(input.dataset.actionId, 10);
       const action = earnActions.find(a => a.id === id);
       if (!action) return;
-      const count = Number(input.value) || 0;
-      const subtotal = count * action.points;
+
+      let count = Number(input.value) || 0;
+      if (count < 0) count = 0;
+      input.value = String(count);
+
+      const subtotal = count * (action.points || 0);
       totalEarned += subtotal;
+
       const td = document.querySelector('.earn-subtotal[data-action-id="' + id + '"]');
       if (td) td.textContent = subtotal;
     });
 
-    // 花积分
+    const allDone = !!allOneTimeDoneSwitch.checked;
+    document.querySelectorAll(".earn-onetime-done").forEach(cb => {
+      const id = parseInt(cb.dataset.actionId, 10);
+      const action = earnActions.find(a => a.id === id);
+      if (!action) return;
+
+      const done = allDone ? true : !!cb.checked;
+      const subtotal = done ? (action.points || 0) : 0;
+      totalEarned += subtotal;
+
+      const td = document.querySelector('.earn-subtotal[data-action-id="' + id + '"]');
+      if (td) td.textContent = subtotal;
+    });
+
     document.querySelectorAll(".spend-count-input").forEach(input => {
       const id = parseInt(input.dataset.actionId, 10);
       const action = spendActions.find(a => a.id === id);
       if (!action) return;
-      const count = Number(input.value) || 0;
-      const subtotal = count * action.points;
+
+      let count = Number(input.value) || 0;
+      if (count < 0) count = 0;
+      input.value = String(count);
+
+      const subtotal = count * (action.points || 0);
       totalSpent += subtotal;
+
       const td = document.querySelector('.spend-subtotal[data-action-id="' + id + '"]');
       if (td) td.textContent = subtotal;
     });
 
-    // 邀请系统
     document.querySelectorAll(".invite-count-input").forEach(input => {
       const cond = input.dataset.condition;
-      const count = Number(input.value) || 0;
+      let count = Number(input.value) || 0;
+      if (count < 0) count = 0;
+      input.value = String(count);
+
       const subtotal = calcInvitePointsForCondition(cond, count);
       totalEarned += subtotal;
+
       const td = document.querySelector('.invite-subtotal[data-condition="' + cond + '"]');
       if (td) td.textContent = subtotal;
     });
@@ -880,20 +968,27 @@ conditions.forEach(cond => {
     const balance = totalEarned - totalSpent;
     totalEarnedSpan.textContent = totalEarned;
     totalSpentSpan.textContent = totalSpent;
+
     balanceSpan.textContent = balance;
     balanceSpan.classList.remove("positive", "negative");
     if (balance > 0) balanceSpan.classList.add("positive");
     else if (balance < 0) balanceSpan.classList.add("negative");
 
-    // 更新可兑换提示
     redeemSuggestionSpan.textContent = getRedeemSuggestion(balance);
   }
 
   function resetAllCounts() {
     document.querySelectorAll(".earn-count-input, .spend-count-input, .invite-count-input")
       .forEach(input => input.value = "0");
+
+    document.querySelectorAll(".earn-onetime-done").forEach(cb => cb.checked = false);
+
+    allOneTimeDoneSwitch.checked = false;
+    renderCalcTables();
+
     document.querySelectorAll(".earn-subtotal, .spend-subtotal, .invite-subtotal")
       .forEach(td => td.textContent = "0");
+
     totalEarnedSpan.textContent = "0";
     totalSpentSpan.textContent = "0";
     balanceSpan.textContent = "0";
@@ -901,7 +996,7 @@ conditions.forEach(cond => {
     redeemSuggestionSpan.textContent = "—";
   }
 
-  // ====== 本地保存 / 载入 ======
+  // ===== 本地保存/载入 =====
   function saveConfig() {
     const data = { earnActions, spendActions, inviteRules };
     try {
@@ -922,15 +1017,22 @@ conditions.forEach(cond => {
     try {
       const data = JSON.parse(raw);
       earnActions = Array.isArray(data.earnActions) ? data.earnActions : [];
+      earnActions = earnActions.map(a => ({ ...a, oneTime: !!a.oneTime }));
+
       spendActions = Array.isArray(data.spendActions) ? data.spendActions : [];
       inviteRules = Array.isArray(data.inviteRules) ? data.inviteRules : [];
+
       recomputeNextId();
 
       renderEarnActions();
       renderSpendActions();
       renderInviteRules();
       renderCalcTables();
+
+      allOneTimeDoneSwitch.checked = false;
       resetAllCounts();
+
+      renderScenarioPanel(); // ✅
 
       if (showAlert) alert("已载入本地保存的积分规则。");
       return true;
@@ -946,60 +1048,50 @@ conditions.forEach(cond => {
     alert("已清除本地保存。当前页面上的规则不会自动清空，如需重置请手动修改或导入其他方案。");
   }
 
-  // ====== 导出 Excel ======
+  // ===== Excel 导出/导入规则 =====
   function exportConfigToXlsx() {
     if (typeof XLSX === "undefined") {
       alert("当前环境无法使用 Excel 导出功能。");
       return;
     }
-
     const wb = XLSX.utils.book_new();
 
-    // Sheet1：赚积分规则
-    const earnData = [["类型", "途径名称", "每次积分"]];
-    earnActions.forEach(a => {
-      earnData.push(["赚积分", a.name, a.points]);
-    });
+    const earnData = [["类型", "途径名称", "每次积分", "是否一次性奖励"]];
+    earnActions.forEach(a => earnData.push(["赚积分", a.name, a.points, a.oneTime ? "是" : "否"]));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(earnData), "EarnRules");
 
-    // Sheet2：花积分规则
     const spendData = [["类型", "途径名称", "每次积分"]];
-    spendActions.forEach(a => {
-      spendData.push(["花积分", a.name, a.points]);
-    });
+    spendActions.forEach(a => spendData.push(["花积分", a.name, a.points]));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(spendData), "SpendRules");
 
-    // Sheet3：邀请规则
     const inviteData = [["被邀请人条件", "起始人数", "结束人数", "每人积分"]];
-    inviteRules.forEach(r => {
-      inviteData.push([r.condition, r.min, r.max, r.points]);
-    });
+    inviteRules.forEach(r => inviteData.push([r.condition, r.min, r.max, r.points]));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(inviteData), "InviteRules");
 
     const now = new Date();
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, "0");
     const d = String(now.getDate()).padStart(2, "0");
-    const fileName = `积分规则_${y}${m}${d}.xlsx`;
-
-    XLSX.writeFile(wb, fileName);
+    XLSX.writeFile(wb, `积分规则_${y}${m}${d}.xlsx`);
   }
 
   function getByAliases(row, aliases) {
-  const keys = Object.keys(row || {});
-  for (const a of aliases) {
-    const hit = keys.find(k => String(k).trim() === a);
-    if (hit !== undefined) return row[hit];
+    const keys = Object.keys(row || {});
+    for (const a of aliases) {
+      const hit = keys.find(k => String(k).trim() === a);
+      if (hit !== undefined) return row[hit];
+    }
+    return undefined;
   }
-  return undefined;
-}
+  function toNum(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+  function toBoolCN(v) {
+    const s = String(v ?? "").trim();
+    return ["是", "true", "TRUE", "1", "Yes", "YES"].includes(s);
+  }
 
-function toNum(v) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
-}
-
-  // ====== 从 Excel 导入规则 ======
   function importConfigFromXlsx(file) {
     if (!file) return;
     const reader = new FileReader();
@@ -1021,40 +1113,38 @@ function toNum(v) {
         const earnJson = XLSX.utils.sheet_to_json(earnSheet, { defval: "" });
         const spendJson = XLSX.utils.sheet_to_json(spendSheet, { defval: "" });
 
-
         earnActions = earnJson
-  .map((row, idx) => ({
-    id: idx + 1,
-    name: String(getByAliases(row, ["途径名称"]) ?? "").trim(),
-    points: toNum(getByAliases(row, ["每次积分"]))
-  }))
-  .filter(r => r.name);
+          .map((row, idx) => ({
+            id: idx + 1,
+            name: String(getByAliases(row, ["途径名称"]) ?? "").trim(),
+            points: toNum(getByAliases(row, ["每次积分"])),
+            oneTime: toBoolCN(getByAliases(row, ["是否一次性奖励"]))
+          }))
+          .filter(r => r.name);
 
-const base = earnActions.length + 1;
+        const base = earnActions.length + 1;
 
-spendActions = spendJson
-  .map((row, idx) => ({
-    id: base + idx,
-    name: String(getByAliases(row, ["途径名称"]) ?? "").trim(),
-    points: toNum(getByAliases(row, ["每次积分"]))
-  }))
-  .filter(r => r.name);
+        spendActions = spendJson
+          .map((row, idx) => ({
+            id: base + idx,
+            name: String(getByAliases(row, ["途径名称"]) ?? "").trim(),
+            points: toNum(getByAliases(row, ["每次积分"]))
+          }))
+          .filter(r => r.name);
 
+        const inviteBase = base + spendActions.length;
 
-        let inviteBase = base + spendActions.length;
         if (inviteSheet) {
           const inviteJson = XLSX.utils.sheet_to_json(inviteSheet, { defval: "" });
-
           inviteRules = inviteJson
-  .map((row, idx) => ({
-    id: inviteBase + idx,
-    condition: String(getByAliases(row, ["被邀请人条件"]) ?? "").trim(),
-    min: toNum(getByAliases(row, ["起始人数"])),
-    max: toNum(getByAliases(row, ["结束人数"])),
-    points: toNum(getByAliases(row, ["每人积分"]))
-  }))
-  .filter(r => r.condition);
-;
+            .map((row, idx) => ({
+              id: inviteBase + idx,
+              condition: String(getByAliases(row, ["被邀请人条件"]) ?? "").trim(),
+              min: toNum(getByAliases(row, ["起始人数"])),
+              max: toNum(getByAliases(row, ["结束人数"])),
+              points: toNum(getByAliases(row, ["每人积分"]))
+            }))
+            .filter(r => r.condition);
         } else {
           inviteRules = [];
         }
@@ -1063,67 +1153,328 @@ spendActions = spendJson
         renderEarnActions();
         renderSpendActions();
         renderInviteRules();
+
+        allOneTimeDoneSwitch.checked = false;
         renderCalcTables();
         resetAllCounts();
+
+        renderScenarioPanel(); // ✅
 
         alert("已成功从 Excel 导入规则！");
       } catch (err) {
         console.error(err);
-        alert("Excel 文件解析失败，请检查字段名是否为：途径名称、每次积分 / 被邀请人条件、起始人数、结束人数、每人积分。");
+        alert("Excel 文件解析失败，请检查字段名是否正确。");
       }
     };
 
     reader.readAsArrayBuffer(file);
   }
 
-  // ====== 事件绑定 ======
+  // =========================
+  // ✅ 新增：兑换预测表模块
+  // =========================
+
+  function renderScenarioPanel() {
+    // 1) Earn checklist
+    scenarioEarnChecklist.innerHTML = "";
+    if (!earnActions.length) {
+      scenarioEarnEmptyTip.style.display = "block";
+    } else {
+      scenarioEarnEmptyTip.style.display = "none";
+
+      // 特殊项：完成所有一次性奖励
+      const special = document.createElement("label");
+      special.className = "check-item";
+      special.innerHTML = `
+        <input type="checkbox" id="scenarioAllOneTime" />
+        <div>
+          <div><strong>完成所有一次性奖励</strong></div>
+          <div class="sub">把所有标记为“一次性”的赚分途径都算上（每条算 1 次）</div>
+        </div>
+      `;
+      scenarioEarnChecklist.appendChild(special);
+
+      earnActions.forEach(a => {
+        const item = document.createElement("label");
+        item.className = "check-item";
+        item.innerHTML = `
+          <input type="checkbox" class="scenario-earn-item" data-action-id="${a.id}" />
+          <div>
+            <div>${a.name} <span class="muted">（+${a.points || 0}）</span> ${a.oneTime ? `<span class="tag">一次性</span>` : ``}</div>
+            <div class="sub">选中表示“完成 1 次”计分</div>
+          </div>
+        `;
+        scenarioEarnChecklist.appendChild(item);
+      });
+    }
+
+    // 2) Condition rows
+    if (scenarioCondRowIds.length === 0) {
+      addScenarioCondRow(); // 默认至少一行
+    } else {
+      // 只是刷新下拉选项
+      scenarioCondRowIds.forEach(id => refreshScenarioCondRowSelect(id));
+    }
+  }
+
+  function addScenarioCondRow() {
+    const id = scenarioCondNextId++;
+    scenarioCondRowIds.push(id);
+
+    const row = document.createElement("div");
+    row.id = `scenarioCondRow_${id}`;
+    row.style.display = "flex";
+    row.style.gap = "8px";
+    row.style.flexWrap = "wrap";
+    row.style.alignItems = "center";
+
+    const select = document.createElement("select");
+    select.id = `scenarioCondSelect_${id}`;
+    select.style.minWidth = "220px";
+
+    const del = document.createElement("button");
+    del.className = "danger";
+    del.textContent = "删除";
+    del.addEventListener("click", () => {
+      scenarioCondRowIds = scenarioCondRowIds.filter(x => x !== id);
+      const el = document.getElementById(`scenarioCondRow_${id}`);
+      if (el) el.remove();
+      if (scenarioCondRowIds.length === 0) addScenarioCondRow();
+    });
+
+    row.appendChild(select);
+    row.appendChild(del);
+    scenarioConditionRows.appendChild(row);
+
+    refreshScenarioCondRowSelect(id);
+  }
+
+  function refreshScenarioCondRowSelect(id) {
+    const sel = document.getElementById(`scenarioCondSelect_${id}`);
+    if (!sel) return;
+
+    const conditions = uniqInviteConditions();
+    const current = sel.value;
+
+    sel.innerHTML = "";
+
+    if (!conditions.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "（暂无邀请条件，请先配置邀请规则）";
+      sel.appendChild(opt);
+      sel.disabled = true;
+      return;
+    }
+
+    sel.disabled = false;
+    conditions.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      sel.appendChild(opt);
+    });
+
+    if (current && conditions.includes(current)) sel.value = current;
+  }
+
+  function getScenarioSelectedEarnActionIds() {
+    return [...document.querySelectorAll(".scenario-earn-item:checked")]
+      .map(cb => parseInt(cb.dataset.actionId, 10))
+      .filter(n => Number.isFinite(n));
+  }
+
+  function getScenarioSelectedConditions() {
+    const vals = scenarioCondRowIds
+      .map(id => {
+        const sel = document.getElementById(`scenarioCondSelect_${id}`);
+        return sel ? String(sel.value || "").trim() : "";
+      })
+      .filter(Boolean);
+
+    // 条件允许重复吗？这里默认去重，避免同一个条件重复加分
+    return [...new Set(vals)];
+  }
+
+  function buildScenarioDoneText(earnParts, n, conds) {
+    const left = earnParts.length ? `完成：${earnParts.join("、")}` : "完成：无";
+    const right = conds.length
+      ? `；并邀请 ${n} 人完成：${conds.join(" + ")}`
+      : `；并邀请 ${n} 人（无条件）`;
+    return left + right;
+  }
+
+  function generateScenarioTable() {
+    const n1 = Math.max(0, Math.floor(Number(scenarioN1.value) || 0));
+    const n2 = Math.max(0, Math.floor(Number(scenarioN2.value) || 0));
+    const start = Math.min(n1, n2);
+    const end = Math.max(n1, n2);
+
+    // 赚分选择
+    const allOneTime = !!document.getElementById("scenarioAllOneTime")?.checked;
+    const selectedIds = new Set(getScenarioSelectedEarnActionIds());
+
+    // 被邀请条件
+    const conds = getScenarioSelectedConditions();
+
+    // 生成表格
+    scenarioTableBody.innerHTML = "";
+    scenarioEmptyTip.style.display = "none";
+
+    const rows = [];
+
+    for (let n = start; n <= end; n++) {
+      let points = 0;
+      const earnParts = [];
+
+      // 完成所有一次性奖励
+      if (allOneTime) {
+        const oneTimes = earnActions.filter(a => !!a.oneTime);
+        if (oneTimes.length) {
+          earnParts.push("所有一次性奖励");
+          oneTimes.forEach(a => points += (a.points || 0));
+        }
+      }
+
+      // 单独选中的赚分途径（每条算 1 次）
+      earnActions.forEach(a => {
+        if (selectedIds.has(a.id)) {
+          // 避免和“所有一次性奖励”重复叠加：如果它是一次性且总开关已选，则不再加一次
+          if (allOneTime && a.oneTime) return;
+          earnParts.push(a.name);
+          points += (a.points || 0);
+        }
+      });
+
+      // 邀请积分：每个条件都用同一个 n 计算并累加
+      conds.forEach(c => {
+        points += calcInvitePointsForCondition(c, n);
+      });
+
+      const redeemText = getRedeemSuggestion(points);
+
+      const { remaining } = redeemGreedy(points);
+      const gapText = getNextTierGapText(remaining);
+
+      const doneText = buildScenarioDoneText(earnParts, n, conds);
+
+      rows.push({
+        done: doneText,
+        redeem: redeemText,
+        gap: gapText
+      });
+    }
+
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+
+      const td1 = document.createElement("td");
+      td1.textContent = r.done;
+
+      const td2 = document.createElement("td");
+      td2.textContent = r.redeem;
+
+      const td3 = document.createElement("td");
+      td3.textContent = r.gap;
+
+      tr.appendChild(td1);
+      tr.appendChild(td2);
+      tr.appendChild(td3);
+
+      scenarioTableBody.appendChild(tr);
+    });
+
+    // 启用按钮
+    scenarioCopyBtn.disabled = rows.length === 0;
+    scenarioExportBtn.disabled = rows.length === 0;
+
+    // 把 rows 存起来（供复制/导出）
+    window.__scenarioRows = rows;
+  }
+
+  function copyScenarioTable() {
+    const rows = window.__scenarioRows || [];
+    if (!rows.length) return;
+
+    // TSV：复制后粘到 Excel 会自动分列
+    const header = ["完成条件", "可兑换奖励", "距离下一档位"];
+    const lines = [header.join("\t")];
+    rows.forEach(r => {
+      lines.push([r.done, r.redeem, r.gap].join("\t"));
+    });
+    const text = lines.join("\n");
+
+    navigator.clipboard.writeText(text)
+      .then(() => alert("已复制！直接粘贴到 Excel/飞书表格即可自动分列。"))
+      .catch(() => alert("复制失败：当前浏览器可能禁止剪贴板权限。"));
+  }
+
+  function exportScenarioTableToXlsx() {
+    const rows = window.__scenarioRows || [];
+    if (!rows.length) return;
+
+    if (typeof XLSX === "undefined") {
+      alert("当前环境无法使用 Excel 导出功能。");
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    const aoa = [["完成条件", "可兑换奖励", "距离下一档位"]];
+    rows.forEach(r => aoa.push([r.done, r.redeem, r.gap]));
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    XLSX.utils.book_append_sheet(wb, ws, "RedeemTable");
+
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    XLSX.writeFile(wb, `兑换预测表_${y}${m}${d}.xlsx`);
+  }
+
+  // ===== 事件绑定 =====
   document.getElementById("addEarnForm").addEventListener("submit", e => {
     e.preventDefault();
     const name = document.getElementById("earnName").value.trim();
     const pointsVal = Number(document.getElementById("earnPoints").value);
-    if (!name || isNaN(pointsVal) || pointsVal < 0) return;
-    earnActions.push({ id: nextId++, name, points: pointsVal });
+    if (!name || !Number.isFinite(pointsVal) || pointsVal < 0) return;
+
+    earnActions.push({ id: nextId++, name, points: pointsVal, oneTime: false });
     document.getElementById("earnName").value = "";
     document.getElementById("earnPoints").value = "";
+
     renderEarnActions();
     renderCalcTables();
+    renderScenarioPanel();
   });
 
   document.getElementById("addSpendForm").addEventListener("submit", e => {
     e.preventDefault();
     const name = document.getElementById("spendName").value.trim();
     const pointsVal = Number(document.getElementById("spendPoints").value);
-    if (!name || isNaN(pointsVal) || pointsVal < 0) return;
+    if (!name || !Number.isFinite(pointsVal) || pointsVal < 0) return;
+
     spendActions.push({ id: nextId++, name, points: pointsVal });
     document.getElementById("spendName").value = "";
     document.getElementById("spendPoints").value = "";
+
     renderSpendActions();
     renderCalcTables();
   });
 
   document.getElementById("addInviteRuleForm").addEventListener("submit", e => {
     e.preventDefault();
-    const cond = document.getElementById("inviteCondition").value;
+    const cond = document.getElementById("inviteCondition").value.trim();
     const minVal = Number(document.getElementById("inviteMin").value);
     const maxVal = Number(document.getElementById("inviteMax").value);
     const ptsVal = Number(document.getElementById("invitePoints").value);
 
-    if (isNaN(minVal) || isNaN(maxVal) || isNaN(ptsVal) || minVal < 0 || maxVal < 0) {
-      alert("人数与积分必须为非负数字。");
-      return;
+    if (!cond) { alert("被邀请人条件不能为空。"); return; }
+    if (![minVal, maxVal, ptsVal].every(n => Number.isFinite(n) && n >= 0)) {
+      alert("人数与积分必须为非负数字。"); return;
     }
-    if (maxVal < minVal) {
-      alert("结束人数不能小于起始人数。");
-      return;
-    }
+    if (maxVal < minVal) { alert("结束人数不能小于起始人数。"); return; }
 
-    inviteRules.push({
-      id: nextId++,
-      condition: cond,
-      min: minVal,
-      max: maxVal,
-      points: ptsVal
-    });
+    inviteRules.push({ id: nextId++, condition: cond, min: minVal, max: maxVal, points: ptsVal });
 
     document.getElementById("inviteMin").value = "";
     document.getElementById("inviteMax").value = "";
@@ -1131,6 +1482,7 @@ spendActions = spendJson
 
     renderInviteRules();
     renderCalcTables();
+    renderScenarioPanel();
   });
 
   document.getElementById("calcButton").addEventListener("click", calculatePoints);
@@ -1146,38 +1498,58 @@ spendActions = spendJson
     input.value = "";
     input.click();
   });
-
   document.getElementById("xlsxFileInput").addEventListener("change", function () {
     const file = this.files[0];
     if (file) importConfigFromXlsx(file);
   });
 
-  // ====== 初始化：优先载入本地保存；没有则用示例 ======
+  allOneTimeDoneSwitch.addEventListener("change", () => renderCalcTables());
+
+  // ✅ 预测表模块事件
+  scenarioAddCondBtn.addEventListener("click", addScenarioCondRow);
+  scenarioGenBtn.addEventListener("click", generateScenarioTable);
+  scenarioCopyBtn.addEventListener("click", copyScenarioTable);
+  scenarioExportBtn.addEventListener("click", exportScenarioTableToXlsx);
+
+  // ===== 初始化 =====
   function initExamples() {
     earnActions = [
-      { id: nextId++, name: "完成新手任务", points: 100 },
-      { id: nextId++, name: "每日签到", points: 10 },
-      { id: nextId++, name: "完成一次订单", points: 5 }
+      { id: nextId++, name: "完成新手任务", points: 100, oneTime: true },
+      { id: nextId++, name: "每日签到", points: 10, oneTime: false },
+      { id: nextId++, name: "完成一次订单", points: 5, oneTime: false }
     ];
     spendActions = [
-      { id: nextId++, name: "兑换5元优惠券", points: 100 },
-      { id: nextId++, name: "积分抽奖一次", points: 20 },
-      { id: nextId++, name: "解锁会员一周", points: 300 }
+      { id: nextId++, name: "兑换1天会员", points: 20 },
+      { id: nextId++, name: "兑换3天会员", points: 50 },
+      { id: nextId++, name: "兑换1周会员", points: 120 },
+      { id: nextId++, name: "兑换1个月会员", points: 400 },
+      { id: nextId++, name: "兑换3个月会员", points: 1100 },
+      { id: nextId++, name: "兑换6个月会员", points: 2000 },
+      { id: nextId++, name: "兑换1年会员", points: 3600 }
     ];
     inviteRules = [
       { id: nextId++, condition: "被邀请人注册成功", min: 0, max: 1, points: 10 },
-      { id: nextId++, condition: "被邀请人注册成功", min: 2, max: 5, points: 20 }
+      { id: nextId++, condition: "被邀请人注册成功", min: 2, max: 5, points: 20 },
+      { id: nextId++, condition: "被邀请人完成首单", min: 0, max: 2, points: 30 }
     ];
 
     renderEarnActions();
     renderSpendActions();
     renderInviteRules();
+
+    allOneTimeDoneSwitch.checked = false;
     renderCalcTables();
+
+    // 预测表模块
+    scenarioCondRowIds = [];
+    scenarioCondNextId = 1;
+    renderScenarioPanel();
   }
 
   function init() {
     const loaded = loadConfig(false);
     if (!loaded) initExamples();
+    else renderScenarioPanel();
   }
 
   init();
