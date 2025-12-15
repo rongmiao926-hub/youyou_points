@@ -799,13 +799,7 @@
     // 邀请系统模拟
     inviteCalcBody.innerHTML = "";
     const hasInviteRules = inviteRules.length > 0;
-    if (!hasInviteRules) {
-      inviteCalcEmptyTip.style.display = "block";
-    } else {
-      inviteCalcEmptyTip.style.display = "none";
-    }
-
-    const conditions = [...new Set(inviteRules.map(r => r.condition))];
+    const conditions = [...new Set(inviteRules.map(r => (r.condition || "").trim()).filter(Boolean))];
 
 if (conditions.length === 0) {
   inviteCalcEmptyTip.style.display = "block";
@@ -1048,7 +1042,8 @@ spendActions = spendJson
 
         let inviteBase = base + spendActions.length;
         if (inviteSheet) {
-          const inviteJson = XLSX.utils.sheet_to_json(inviteSheet);
+          const inviteJson = XLSX.utils.sheet_to_json(inviteSheet, { defval: "" });
+
           inviteRules = inviteJson
   .map((row, idx) => ({
     id: inviteBase + idx,
