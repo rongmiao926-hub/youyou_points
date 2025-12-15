@@ -310,8 +310,8 @@
     </div>
     <form class="inline-form" id="addInviteRuleForm">
       <input type="text" id="inviteCondition" placeholder="被邀请人条件（如：注册成功）" required />
-      <input type="number" id="inviteMin" placeholder="起始人数（min）" min="0" step="1" required />
-      <input type="number" id="inviteMax" placeholder="结束人数（max）" min="0" step="1" required />
+      <input type="number" id="inviteMin" placeholder="min人数" min="0" step="1" required />
+      <input type="number" id="inviteMax" placeholder="max人数" min="0" step="1" required />
       <input type="number" id="invitePoints" placeholder="每人积分" min="0" step="1" required />
       <button type="submit" class="primary">
         + 添加邀请规则
@@ -667,23 +667,25 @@
 
   // ====== 计算：根据某个条件的阶梯规则，算邀请积分 ======
   function calcInvitePointsForCondition(condition, totalInvites) {
-    const rules = inviteRules.filter(r => r.condition === condition);
-    if (rules.length === 0 || totalInvites <= 0) return 0;
+  const condKey = (condition || "").trim();
+  const rules = inviteRules.filter(r => (r.condition || "").trim() === condKey);
+  if (rules.length === 0 || totalInvites <= 0) return 0;
 
-    const sorted = [...rules].sort((a, b) => a.min - b.min || a.max - b.max);
-    let total = 0;
+  const sorted = [...rules].sort((a, b) => a.min - b.min || a.max - b.max);
+  let total = 0;
 
-    sorted.forEach(rule => {
-      const start = Math.max(rule.min, 1); // 邀请人数从 1 开始计
-      if (totalInvites < start) return;
-      const end = Math.min(rule.max, totalInvites);
-      if (end < start) return;
-      const count = end - start + 1;
-      total += count * rule.points;
-    });
+  sorted.forEach(rule => {
+    const start = Math.max(rule.min, 1);
+    if (totalInvites < start) return;
+    const end = Math.min(rule.max, totalInvites);
+    if (end < start) return;
+    const count = end - start + 1;
+    total += count * rule.points;
+  });
 
-    return total;
-  }
+  return total;
+}
+
 
   // ====== 兑换建议：根据剩余积分和优先级，给出最大可兑换组合 ======
   function getRedeemSuggestion(balance) {
@@ -798,7 +800,6 @@
 
     // 邀请系统模拟
     inviteCalcBody.innerHTML = "";
-    const hasInviteRules = inviteRules.length > 0;
     const conditions = [...new Set(inviteRules.map(r => (r.condition || "").trim()).filter(Boolean))];
 
 if (conditions.length === 0) {
