@@ -80,6 +80,19 @@
       align-items: center;
     }
 
+    .scenario-cond-list {
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .scenario-cond-list .inline-check {
+      background:#f9fafb;
+      border:1px solid #e5e7eb;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+
     .scenario-table-wrap {
       overflow:auto;
       border: 1px solid #e5e7eb;
@@ -216,10 +229,94 @@
     </div>
   </section>
 
-  <!-- 4. 模拟计算 -->
+  <!-- 4. 情景分析 -->
+  <section class="section" id="scenario-section">
+    <h2>
+      4. 情景分析（批量输出）
+      <span class="badge">N→M 邀请人数枚举</span>
+    </h2>
+    <div class="section-desc">
+      你可以设置：用户完成了哪些赚积分途径（一次性勾选/非一次性次数），并选择多个被邀请人条件；
+      然后对邀请人数从【起始】到【结束】逐一输出：可兑换奖励 + 距离下一档位。
+    </div>
+
+    <div class="scenario-grid">
+      <div>
+        <div class="calc-section-title">
+          <strong>完成哪些赚积分途径</strong>
+          <span class="tag">一次性=勾选；非一次性=次数</span>
+        </div>
+
+        <div class="pill" style="margin: 8px 0;">
+          <label class="inline-check">
+            <input type="checkbox" id="scenarioAllOnceDone" />
+            完成所有一次性奖励
+          </label>
+          <span class="mini">勾上后：情景分析中的一次性途径将全部视为完成一次。</span>
+        </div>
+
+        <table>
+          <thead>
+          <tr>
+            <th>途径</th>
+            <th>每次积分</th>
+            <th style="width: 140px;">完成/次数</th>
+          </tr>
+          </thead>
+          <tbody id="scenarioEarnBody"></tbody>
+        </table>
+        <div id="scenarioEarnEmptyTip" class="empty-tip">暂无赚积分配置。</div>
+      </div>
+
+      <div>
+        <div class="calc-section-title">
+          <strong>邀请系统</strong>
+          <span class="tag">条件选择与人数范围</span>
+        </div>
+
+        <div class="scenario-row">
+          <strong>邀请人数范围：</strong>
+          <input type="number" id="scenarioInviteFrom" min="0" step="1" value="0" />
+          <span>到</span>
+          <input type="number" id="scenarioInviteTo" min="0" step="1" value="10" />
+          <span class="mini">（将输出每一个人数：from, from+1, ... , to）</span>
+        </div>
+
+        <div class="scenario-row">
+          <strong>被邀请人条件：</strong>
+          <div id="scenarioCondList" class="scenario-cond-list"></div>
+        </div>
+        <div class="mini">可多选条件，表示每个条件都各自按 N→M 计算邀请积分并累加。</div>
+      </div>
+
+      <div class="btn-row">
+        <button id="scenarioRunBtn" class="primary">🧾 生成表格</button>
+        <button id="scenarioCopyBtn" class="secondary" disabled>📋 复制表格（TSV）</button>
+        <button id="scenarioExportBtn" class="secondary" disabled>📑 导出为 Excel</button>
+      </div>
+
+      <div class="scenario-table-wrap">
+        <table id="scenarioTable">
+          <thead>
+          <tr>
+            <th style="min-width: 340px;">完成条件</th>
+            <th style="min-width: 260px;">可兑换奖励</th>
+            <th style="min-width: 260px;">距离下一档位</th>
+          </tr>
+          </thead>
+          <tbody id="scenarioTbody">
+          <tr><td class="empty-tip" colspan="3">尚未生成。点击“生成表格”。</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 5. 模拟计算 -->
   <section class="section" id="calc-section">
     <h2>
-      4. 积分模拟计算
+      5. 积分模拟计算
       <span class="badge">次数/勾选 → 剩余积分</span>
     </h2>
     <div class="section-desc">
@@ -324,90 +421,6 @@
     </div>
   </section>
 
-  <!-- 5. 情景分析 -->
-  <section class="section" id="scenario-section">
-    <h2>
-      5. 情景分析（批量输出）
-      <span class="badge">N→M 邀请人数枚举</span>
-    </h2>
-    <div class="section-desc">
-      你可以设置：用户完成了哪些赚积分途径（一次性勾选/非一次性次数），并选择多个被邀请人条件；
-      然后对邀请人数从【起始】到【结束】逐一输出：可兑换奖励 + 距离下一档位。
-    </div>
-
-    <div class="scenario-grid">
-
-      <div class="pill">
-        <label class="inline-check">
-          <input type="checkbox" id="scenarioAllOnceDone" />
-          完成所有一次性奖励
-        </label>
-        <span class="mini">勾上后：情景分析中的一次性途径将全部视为完成一次。</span>
-      </div>
-
-      <div>
-        <div class="calc-section-title">
-          <strong>完成哪些赚积分途径</strong>
-          <span class="tag">一次性=勾选；非一次性=次数</span>
-        </div>
-
-        <table>
-          <thead>
-          <tr>
-            <th>途径</th>
-            <th>每次积分</th>
-            <th style="width: 140px;">完成/次数</th>
-          </tr>
-          </thead>
-          <tbody id="scenarioEarnBody"></tbody>
-        </table>
-        <div id="scenarioEarnEmptyTip" class="empty-tip">暂无赚积分配置。</div>
-      </div>
-
-      <div class="scenario-row">
-        <strong>邀请人数范围：</strong>
-        <input type="number" id="scenarioInviteFrom" min="0" step="1" value="0" />
-        <span>到</span>
-        <input type="number" id="scenarioInviteTo" min="0" step="1" value="10" />
-        <span class="mini">（将输出每一个人数：from, from+1, ... , to）</span>
-      </div>
-
-      <div class="scenario-row">
-        <strong>被邀请人条件：</strong>
-        <select id="scenarioCondSelect"></select>
-        <button id="scenarioAddCondBtn" class="secondary">+ 添加条件</button>
-        <span class="mini">可添加多个条件，表示每个条件都各自按 N→M 计算邀请积分并累加。</span>
-      </div>
-
-      <div class="scenario-row" id="scenarioCondPickedRow" style="display:none;">
-        <strong>已选条件：</strong>
-        <span id="scenarioCondPills" style="display:flex; flex-wrap:wrap; gap:6px;"></span>
-      </div>
-
-      <div class="btn-row">
-        <button id="scenarioRunBtn" class="primary">🧾 生成表格</button>
-        <button id="scenarioCopyBtn" class="secondary" disabled>📋 复制表格（TSV）</button>
-        <button id="scenarioExportBtn" class="secondary" disabled>📑 导出为 Excel</button>
-      </div>
-
-      <div class="scenario-table-wrap">
-        <table id="scenarioTable">
-          <thead>
-          <tr>
-            <th style="min-width: 340px;">完成条件</th>
-            <th style="min-width: 260px;">可兑换奖励</th>
-            <th style="min-width: 260px;">距离下一档位</th>
-          </tr>
-          </thead>
-          <tbody id="scenarioTbody">
-          <tr><td class="empty-tip" colspan="3">尚未生成。点击“生成表格”。</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-    </div>
-  </section>
-
 </div>
 
 <script>
@@ -465,17 +478,13 @@
   const scenarioInviteFrom = document.getElementById("scenarioInviteFrom");
   const scenarioInviteTo = document.getElementById("scenarioInviteTo");
 
-  const scenarioCondSelect = document.getElementById("scenarioCondSelect");
-  const scenarioAddCondBtn = document.getElementById("scenarioAddCondBtn");
-  const scenarioCondPickedRow = document.getElementById("scenarioCondPickedRow");
-  const scenarioCondPills = document.getElementById("scenarioCondPills");
+  const scenarioCondList = document.getElementById("scenarioCondList");
 
   const scenarioRunBtn = document.getElementById("scenarioRunBtn");
   const scenarioCopyBtn = document.getElementById("scenarioCopyBtn");
   const scenarioExportBtn = document.getElementById("scenarioExportBtn");
   const scenarioTbody = document.getElementById("scenarioTbody");
 
-  let scenarioPickedConds = []; // string[]
   let scenarioLastRows = [];    // for copy/export
 
   // ====== 工具 ======
@@ -563,7 +572,7 @@
       });
       onceLabel.appendChild(onceInput);
       const onceTxt = document.createElement("span");
-      onceTxt.textContent = "是一次性";
+      onceTxt.textContent = "是";
       onceLabel.appendChild(onceTxt);
       onceTd.appendChild(onceLabel);
       tr.appendChild(onceTd);
@@ -670,7 +679,7 @@
         inviteRules = inviteRules.filter(r => r.id !== rule.id);
         renderInviteRules();
         renderCalcTables();
-        refreshScenarioCondOptions();
+        renderScenarioCondCheckboxes();
       });
       opTd.appendChild(delBtn);
       tr.appendChild(opTd);
@@ -678,7 +687,7 @@
       inviteRuleTableBody.appendChild(tr);
     });
 
-    refreshScenarioCondOptions();
+    renderScenarioCondCheckboxes();
   }
 
   // ====== 邀请积分计算（某条件） ======
@@ -1183,64 +1192,42 @@
     });
   }
 
-  // ====== 情景分析：条件下拉 options ======
-  function refreshScenarioCondOptions() {
-    const conds = uniq(inviteRules.map(r => (r.condition || "").trim()).filter(Boolean)).sort((a,b)=>a.localeCompare(b,"zh-CN"));
-    scenarioCondSelect.innerHTML = "";
-    if (!conds.length) {
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "（暂无邀请条件）";
-      scenarioCondSelect.appendChild(opt);
-      scenarioCondSelect.disabled = true;
-      scenarioAddCondBtn.disabled = true;
-      return;
-    }
-    scenarioCondSelect.disabled = false;
-    scenarioAddCondBtn.disabled = false;
-
-    conds.forEach(c => {
-      const opt = document.createElement("option");
-      opt.value = c;
-      opt.textContent = c;
-      scenarioCondSelect.appendChild(opt);
-    });
+  // ====== 情景分析：条件多选 ======
+  function getScenarioSelectedConds() {
+    return Array.from(document.querySelectorAll(".scenario-cond-checkbox:checked"))
+      .map(cb => cb.value);
   }
 
-  function renderScenarioPickedConds() {
-    scenarioCondPills.innerHTML = "";
-    if (!scenarioPickedConds.length) {
-      scenarioCondPickedRow.style.display = "none";
+  function renderScenarioCondCheckboxes() {
+    const prev = new Set(getScenarioSelectedConds());
+    const conds = uniq(inviteRules.map(r => (r.condition || "").trim()).filter(Boolean))
+      .sort((a,b)=>a.localeCompare(b,"zh-CN"));
+
+    scenarioCondList.innerHTML = "";
+    if (!conds.length) {
+      const tip = document.createElement("span");
+      tip.className = "mini";
+      tip.textContent = "暂无邀请条件";
+      scenarioCondList.appendChild(tip);
       return;
     }
-    scenarioCondPickedRow.style.display = "flex";
 
-    scenarioPickedConds.forEach(cond => {
-      const pill = document.createElement("span");
-      pill.className = "tag";
-      pill.style.display = "inline-flex";
-      pill.style.alignItems = "center";
-      pill.style.gap = "6px";
-      pill.textContent = cond;
+    conds.forEach(c => {
+      const label = document.createElement("label");
+      label.className = "inline-check";
 
-      const btn = document.createElement("button");
-      btn.textContent = "×";
-      btn.className = "danger";
-      btn.style.padding = "2px 8px";
-      btn.style.borderRadius = "999px";
-      btn.addEventListener("click", () => {
-        scenarioPickedConds = scenarioPickedConds.filter(x => x !== cond);
-        renderScenarioPickedConds();
-      });
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.className = "scenario-cond-checkbox";
+      cb.value = c;
+      cb.checked = prev.has(c);
+      label.appendChild(cb);
 
-      const wrap = document.createElement("span");
-      wrap.style.display = "inline-flex";
-      wrap.style.alignItems = "center";
-      wrap.style.gap = "6px";
-      wrap.appendChild(pill);
-      wrap.appendChild(btn);
+      const text = document.createElement("span");
+      text.textContent = c;
+      label.appendChild(text);
 
-      scenarioCondPills.appendChild(wrap);
+      scenarioCondList.appendChild(label);
     });
   }
 
@@ -1263,7 +1250,7 @@
     return total;
   }
 
-  function buildScenarioConditionText(inviteN) {
+  function buildScenarioConditionText(inviteN, selectedConds) {
     // “完成条件”列：赚积分完成情况 + 邀请说明
     const parts = [];
 
@@ -1295,7 +1282,7 @@
     if (repeatParts.length) parts.push("非一次性：" + repeatParts.join("、"));
 
     // 邀请条件描述
-    const condText = scenarioPickedConds.length ? scenarioPickedConds.join(" + ") : "（未选条件）";
+    const condText = selectedConds.length ? selectedConds.join(" + ") : "（未选条件）";
     parts.push(`邀请人数=${inviteN}；条件：${condText}`);
 
     return parts.join("；");
@@ -1309,8 +1296,9 @@
       alert("邀请人数范围：结束不能小于起始。");
       return;
     }
-    if (!scenarioPickedConds.length) {
-      alert("请至少添加 1 个被邀请人条件。");
+    const selectedConds = getScenarioSelectedConds();
+    if (!selectedConds.length) {
+      alert("请至少选择 1 个被邀请人条件。");
       return;
     }
 
@@ -1321,7 +1309,7 @@
 
     for (let n = from; n <= to; n++) {
       let inviteTotal = 0;
-      scenarioPickedConds.forEach(cond => {
+      selectedConds.forEach(cond => {
         inviteTotal += calcInvitePointsForCondition(cond, n);
       });
 
@@ -1330,7 +1318,7 @@
       const redeemText = planToText(plan);
       const distanceText = nextTierDistance(remaining);
 
-      const condText = buildScenarioConditionText(n);
+      const condText = buildScenarioConditionText(n, selectedConds);
 
       scenarioLastRows.push({
         "完成条件": condText,
@@ -1468,16 +1456,6 @@
   // 情景分析事件
   scenarioAllOnceDone.addEventListener("change", applyScenarioAllOnceDone);
 
-  scenarioAddCondBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    const v = (scenarioCondSelect.value || "").trim();
-    if (!v) return;
-    if (!scenarioPickedConds.includes(v)) {
-      scenarioPickedConds.push(v);
-      renderScenarioPickedConds();
-    }
-  });
-
   scenarioRunBtn.addEventListener("click", runScenario);
   scenarioCopyBtn.addEventListener("click", copyScenarioTSV);
   scenarioExportBtn.addEventListener("click", exportScenarioToXlsx);
@@ -1531,8 +1509,7 @@
     renderInviteRules();
     renderCalcTables();
     renderScenarioEarn();
-    refreshScenarioCondOptions();
-    renderScenarioPickedConds();
+    renderScenarioCondCheckboxes();
   }
 
   function init() {
@@ -1541,8 +1518,7 @@
     else {
       // 已载入也要初始化情景分析区域
       renderScenarioEarn();
-      refreshScenarioCondOptions();
-      renderScenarioPickedConds();
+      renderScenarioCondCheckboxes();
     }
   }
 
